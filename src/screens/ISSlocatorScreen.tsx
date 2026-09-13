@@ -10,89 +10,39 @@ import {
 } from 'react-native';
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import { useISSTelemetry } from '../hooks/useISSTelemetry';
-
-const MAX_TRAIL_POINTS = 150;
+import {
+  fetchISSGPData,
+  calculateOrbitalVisualization,
+} from '../services/satelliteService';
+import { SatelliteGPData } from '../types';
 
 export default function ISSlocatorScreen() {
   const { telemetry: location, loading, error, refetch } = useISSTelemetry(7000);
-  const [trail, setTrail] = useState<[number, number][]>([]);
+  const [issGpData, setIssGpData] = useState<SatelliteGPData | null>(null);
 
+  // Fetch real ISS orbital GP parameters once on mount (failure-safe)
   useEffect(() => {
-    if (!location) return;
-
-    const { latitude, longitude } = location;
-
-    // Handle invalid or missing latitude or longitude safely
-    if (
-      typeof latitude !== 'number' ||
-      typeof longitude !== 'number' ||
-      isNaN(latitude) ||
-      isNaN(longitude) ||
-      latitude < -90 ||
-      latitude > 90 ||
-      longitude < -180 ||
-      longitude > 180
-    ) {
-      return;
-    }
-
-    setTrail((prevTrail) => {
-      if (prevTrail.length > 0) {
-        const [lastLon, lastLat] = prevTrail[prevTrail.length - 1];
-        // Do not add duplicate coordinates when ISS position has not meaningfully changed
-        if (Math.abs(lastLon - longitude) < 0.00001 && Math.abs(lastLat - latitude) < 0.00001) {
-          return prevTrail;
+    let isMounted = true;
+    fetchISSGPData()
+      .then((gp) => {
+        if (isMounted && gp) {
+          setIssGpData(gp);
         }
-      }
+      })
+      .catch(() => {
+        // Failure-safe: if CelesTrak GP fails, live ISS telemetry remains 100% operational
+      });
 
-      const updatedTrail = [...prevTrail, [longitude, latitude] as [number, number]];
-      if (updatedTrail.length > MAX_TRAIL_POINTS) {
-        return updatedTrail.slice(updatedTrail.length - MAX_TRAIL_POINTS);
-      }
-      return updatedTrail;
-    });
-  }, [location]);
-
-  // Compute GeoJSON FeatureCollection handling international date line crossings
-  const trailGeoJson = useMemo<GeoJSON.FeatureCollection<GeoJSON.LineString>>(() => {
-    const segments: [number, number][][] = [];
-    let currentSegment: [number, number][] = [];
-
-    for (const pt of trail) {
-      if (currentSegment.length === 0) {
-        currentSegment.push(pt);
-      } else {
-        const prevPt = currentSegment[currentSegment.length - 1];
-        const lonDiff = Math.abs(pt[0] - prevPt[0]);
-        // Break trail into separate segments if longitude jumps across date line (> 180 deg)
-        if (lonDiff > 180) {
-          if (currentSegment.length >= 2) {
-            segments.push(currentSegment);
-          }
-          currentSegment = [pt];
-        } else {
-          currentSegment.push(pt);
-        }
-      }
-    }
-
-    if (currentSegment.length >= 2) {
-      segments.push(currentSegment);
-    }
-
-    return {
-      type: 'FeatureCollection',
-      features: segments.map((seg, index) => ({
-        type: 'Feature',
-        id: `trail-segment-${index}`,
-        properties: {},
-        geometry: {
-          type: 'LineString',
-          coordinates: seg,
-        },
-      })),
+    return () => {
+      isMounted = false;
     };
-  }, [trail]);
+  }, []);
+
+  // Compute unified orbital visualization using the EXACT SAME pipeline as Feature 2
+  const orbitalState = useMemo(() => {
+    if (!issGpData) return null;
+    return calculateOrbitalVisualization(issGpData, Date.now(), 'iss-orbit', 50);
+  }, [issGpData, location]);
 
   if (loading && !location) {
     return (
@@ -140,7 +90,7 @@ export default function ISSlocatorScreen() {
       >
         {/* Map View */}
         <View style={styles.mapContainer}>
-          {location && (
+          {orbitalState && (
             <MapLibreGL.MapView
               style={styles.mapView}
               mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
@@ -150,25 +100,51 @@ export default function ISSlocatorScreen() {
             >
               <MapLibreGL.Camera
                 zoomLevel={2.5}
-                centerCoordinate={[location.longitude, location.latitude]}
+                centerCoordinate={[
+                  orbitalState.currentPos.longitude,
+                  orbitalState.currentPos.latitude,
+                ]}
                 animationMode="easeTo"
                 animationDuration={1000}
               />
-              <MapLibreGL.ShapeSource id="iss-trail-source" shape={trailGeoJson}>
-                <MapLibreGL.LineLayer
-                  id="iss-trail-layer"
-                  style={{
-                    lineColor: '#00d4ff',
-                    lineWidth: 3,
-                    lineOpacity: 0.85,
-                    lineCap: 'round',
-                    lineJoin: 'round',
-                  }}
-                />
-              </MapLibreGL.ShapeSource>
+
+              {/* Orbital Trail LineLayer (Identical to Feature 2) */}
+              {orbitalState.trailGeoJson.features.length > 0 && (
+                <MapLibreGL.ShapeSource id="iss-orbit-source" shape={orbitalState.trailGeoJson}>
+                  <MapLibreGL.LineLayer
+                    id="iss-orbit-line"
+                    style={{
+                      lineColor: '#00d4ff',
+                      lineWidth: 2.5,
+                      lineOpacity: 0.75,
+                      lineCap: 'round',
+                      lineJoin: 'round',
+                    }}
+                  />
+                </MapLibreGL.ShapeSource>
+              )}
+
+              {/* Directional Arrow directly on orbital line 50s ahead (Identical to Feature 2) */}
+              {orbitalState.arrowInfo && (
+                <MapLibreGL.MarkerView
+                  id="iss-orbit-arrow"
+                  coordinate={orbitalState.arrowInfo.arrowPos}
+                >
+                  <View style={styles.arrowMarkerBox}>
+                    <View style={{ transform: [{ rotate: `${orbitalState.arrowInfo.bearing}deg` }] }}>
+                      <Text style={styles.arrowSymbol}>▲</Text>
+                    </View>
+                  </View>
+                </MapLibreGL.MarkerView>
+              )}
+
+              {/* Live ISS Marker sitting directly ON the orbital line (Identical to Feature 2) */}
               <MapLibreGL.MarkerView
                 id="iss-marker"
-                coordinate={[location.longitude, location.latitude]}
+                coordinate={[
+                  orbitalState.currentPos.longitude,
+                  orbitalState.currentPos.latitude,
+                ]}
               >
                 <Image
                   source={require('../../assets/iss_icon.png')}
@@ -179,7 +155,7 @@ export default function ISSlocatorScreen() {
           )}
         </View>
 
-        {/* Telemetry Card */}
+        {/* Telemetry Card (WhereTheISS Live Telemetry) */}
         <View style={styles.telemetryCard}>
           <Text style={styles.telemetryTitle}>Live Telemetry</Text>
 
@@ -208,7 +184,7 @@ export default function ISSlocatorScreen() {
             <View style={styles.telemetryItem}>
               <Text style={styles.label}>Velocity</Text>
               <Text style={styles.value}>
-                {location ? `${Math.round(location.velocity)} km/h` : '--'}
+                {location ? `${Math.round(location.velocity).toLocaleString('en-US')} km/h` : '--'}
               </Text>
             </View>
           </View>
@@ -282,6 +258,23 @@ const styles = StyleSheet.create({
     width: 45,
     height: 35,
     resizeMode: 'contain',
+  },
+  arrowMarkerBox: {
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 900,
+  },
+  arrowSymbol: {
+    color: '#00d4ff',
+    fontSize: 14,
+    fontWeight: 'bold',
+    lineHeight: 16,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 212, 255, 0.9)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 5,
   },
   telemetryCard: {
     flex: 0.35,

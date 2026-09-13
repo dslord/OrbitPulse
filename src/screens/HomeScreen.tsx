@@ -53,7 +53,25 @@ export default function HomeScreen({ navigation }: Props) {
             />
           </TouchableOpacity>
 
-          {/* Option 2: Meteor Threat Feed */}
+          {/* Option 2: Satellite Explorer */}
+          <TouchableOpacity
+            style={styles.routeCard}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate('SatelliteExplorer')}
+          >
+            <View style={styles.cardTextContainer}>
+              <Text style={styles.routeTitle}>Satellite Explorer</Text>
+              <Text style={styles.routeSubtitle}>Browse & Track Satellites</Text>
+              <Text style={styles.knowMoreText}>Explore Satellites &rarr;</Text>
+            </View>
+            <Text style={styles.numberBadge}>2</Text>
+            <Image
+              source={require('../../assets/rocket_icon.png')}
+              style={styles.cardIconRocket}
+            />
+          </TouchableOpacity>
+
+          {/* Option 3: Meteor Threat Feed */}
           <TouchableOpacity
             style={styles.routeCard}
             activeOpacity={0.8}
@@ -64,14 +82,14 @@ export default function HomeScreen({ navigation }: Props) {
               <Text style={styles.routeSubtitle}>NASA Near-Earth Objects</Text>
               <Text style={styles.knowMoreText}>Analyze Threats &rarr;</Text>
             </View>
-            <Text style={styles.numberBadge}>2</Text>
+            <Text style={styles.numberBadge}>3</Text>
             <Image
               source={require('../../assets/meteor_icon.png')}
               style={styles.cardIconMeteor}
             />
           </TouchableOpacity>
 
-          {/* Option 3: Space Updates */}
+          {/* Option 4: Space Updates */}
           <TouchableOpacity
             style={styles.routeCard}
             activeOpacity={0.8}
@@ -82,9 +100,9 @@ export default function HomeScreen({ navigation }: Props) {
               <Text style={styles.routeSubtitle}>Live Telemetry & News</Text>
               <Text style={styles.knowMoreText}>Read Updates &rarr;</Text>
             </View>
-            <Text style={styles.numberBadge}>3</Text>
+            <Text style={styles.numberBadge}>4</Text>
             <Image
-              source={require('../../assets/rocket_icon.png')}
+              source={require('../../assets/blog_icon.png')}
               style={styles.cardIconRocket}
             />
           </TouchableOpacity>

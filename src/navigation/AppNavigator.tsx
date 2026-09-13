@@ -7,6 +7,7 @@ import ISSlocatorScreen from '../screens/ISSlocatorScreen';
 import MeteorScreen from '../screens/MeteorScreen';
 import UpdatesScreen from '../screens/UpdatesScreen';
 import SpaceNewsScreen from '../screens/SpaceNewsScreen';
+import SatelliteExplorerScreen from '../screens/SatelliteExplorerScreen';
 import { RootStackParamList } from '../types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -39,6 +40,13 @@ export default function AppNavigator() {
           component={ISSlocatorScreen}
           options={{
             title: 'ISS Location Tracker',
+          }}
+        />
+        <Stack.Screen
+          name="SatelliteExplorer"
+          component={SatelliteExplorerScreen}
+          options={{
+            title: 'Satellite Explorer',
           }}
         />
         <Stack.Screen

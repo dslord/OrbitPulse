@@ -48,10 +48,51 @@ export interface SpaceNewsArticle {
   published_at: string;
 }
 
+export type SatelliteCategory = 'visual' | 'stations' | 'weather' | 'resource';
+
+export interface SatelliteGPData {
+  OBJECT_NAME: string;
+  OBJECT_ID: string;
+  EPOCH: string;
+  MEAN_MOTION: number;
+  ECCENTRICITY: number;
+  INCLINATION: number;
+  RA_OF_ASC_NODE: number;
+  ARG_OF_PERICENTER: number;
+  MEAN_ANOMALY: number;
+  NORAD_CAT_ID: number;
+  CLASSIFICATION_TYPE?: string;
+  EPHEMERIS_TYPE?: number;
+  ELEMENT_SET_NO?: number;
+  REV_AT_EPOCH?: number;
+  BSTAR?: number;
+  MEAN_MOTION_DOT?: number;
+  MEAN_MOTION_DDOT?: number;
+}
+
+export interface SatellitePosition {
+  latitude: number;
+  longitude: number;
+  altitudeKm: number;
+  velocityKmH: number;
+  timestamp: number;
+}
+
+export interface SatelliteItem {
+  id: string;
+  name: string;
+  noradId: number;
+  designator: string;
+  category: SatelliteCategory;
+  gpData: SatelliteGPData;
+  position: SatellitePosition | null;
+}
+
 export type RootStackParamList = {
   Home: undefined;
   ISSlocator: undefined;
   Meteor: undefined;
   Updates: undefined;
   SpaceNews: undefined;
+  SatelliteExplorer: undefined;
 };
