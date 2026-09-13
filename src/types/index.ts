@@ -169,6 +169,24 @@ export interface ISSPassItem {
   visibilityDetails: string;
 }
 
+export type MissionStatus = 'Active' | 'Completed' | 'Upcoming';
+
+export interface MissionItem {
+  id: string;
+  name: string;
+  agency: string;
+  agencyAbbrev: string;
+  status: MissionStatus;
+  category: string;
+  target: string;
+  launchDate?: string;
+  duration?: string;
+  description: string;
+  objectives: string[];
+  websiteUrl?: string;
+  imageUrl?: string;
+}
+
 export type RootStackParamList = {
   Home: undefined;
   ISSlocator: undefined;
@@ -182,4 +200,6 @@ export type RootStackParamList = {
   AsteroidDetails: { asteroid: MeteorObject };
   TodayInSpace: undefined;
   SpaceAgencies: undefined;
+  MissionExplorer: undefined;
+  MissionDetails: { mission: MissionItem };
 };
