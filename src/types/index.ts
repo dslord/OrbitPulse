@@ -180,4 +180,5 @@ export type RootStackParamList = {
   LaunchDetails: { launch: LaunchItem };
   ISSPass: undefined;
   AsteroidDetails: { asteroid: MeteorObject };
+  TodayInSpace: undefined;
 };

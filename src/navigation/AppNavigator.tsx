@@ -12,6 +12,7 @@ import LaunchTrackerScreen from '../screens/LaunchTrackerScreen';
 import LaunchDetailsScreen from '../screens/LaunchDetailsScreen';
 import ISSPassScreen from '../screens/ISSPassScreen';
 import AsteroidDetailsScreen from '../screens/AsteroidDetailsScreen';
+import TodayInSpaceScreen from '../screens/TodayInSpaceScreen';
 import { RootStackParamList } from '../types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -86,6 +87,13 @@ export default function AppNavigator() {
           component={AsteroidDetailsScreen}
           options={{
             title: 'Asteroid Radar & Details',
+          }}
+        />
+        <Stack.Screen
+          name="TodayInSpace"
+          component={TodayInSpaceScreen}
+          options={{
+            title: 'Today in Space',
           }}
         />
         <Stack.Screen
