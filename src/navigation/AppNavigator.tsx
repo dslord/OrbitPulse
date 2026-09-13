@@ -13,6 +13,7 @@ import LaunchDetailsScreen from '../screens/LaunchDetailsScreen';
 import ISSPassScreen from '../screens/ISSPassScreen';
 import AsteroidDetailsScreen from '../screens/AsteroidDetailsScreen';
 import TodayInSpaceScreen from '../screens/TodayInSpaceScreen';
+import SpaceAgenciesScreen from '../screens/SpaceAgenciesScreen';
 import { RootStackParamList } from '../types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -94,6 +95,13 @@ export default function AppNavigator() {
           component={TodayInSpaceScreen}
           options={{
             title: 'Today in Space',
+          }}
+        />
+        <Stack.Screen
+          name="SpaceAgencies"
+          component={SpaceAgenciesScreen}
+          options={{
+            title: 'Space Agencies Directory',
           }}
         />
         <Stack.Screen
