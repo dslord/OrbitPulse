@@ -11,10 +11,13 @@ import {
   RefreshControl,
   ListRenderItemInfo,
 } from 'react-native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { fetchMeteorFeed } from '../services/nasaNeoService';
-import { MeteorObject } from '../types';
+import { MeteorObject, RootStackParamList } from '../types';
 
-export default function MeteorScreen() {
+type Props = NativeStackScreenProps<RootStackParamList, 'Meteor'>;
+
+export default function MeteorScreen({ navigation }: Props) {
   const [meteors, setMeteors] = useState<MeteorObject[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -92,7 +95,11 @@ export default function MeteorScreen() {
     ).toLocaleString();
 
     return (
-      <View style={styles.cardContainer}>
+      <TouchableOpacity
+        style={styles.cardContainer}
+        activeOpacity={0.85}
+        onPress={() => navigation.navigate('AsteroidDetails', { asteroid: item })}
+      >
         <ImageBackground source={bgImg} style={styles.cardBackground} imageStyle={{ borderRadius: 20 }}>
           <View style={styles.cardHeader}>
             <Text style={[styles.threatBadge, { backgroundColor: threatColor }]}>
@@ -129,9 +136,11 @@ export default function MeteorScreen() {
               <Text style={styles.dataLabel}>Velocity:</Text>
               <Text style={styles.dataValue}>{velocityKmH} km/h</Text>
             </View>
+
+            <Text style={styles.viewDetailsText}>Tap for Trajectory Radar & Orbit Details &rarr;</Text>
           </View>
         </ImageBackground>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -333,5 +342,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#ffffff',
     fontWeight: 'bold',
+  },
+  viewDetailsText: {
+    color: '#00d4ff',
+    fontSize: 11,
+    fontWeight: 'bold',
+    marginTop: 8,
+    textAlign: 'right',
   },
 });

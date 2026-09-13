@@ -11,6 +11,7 @@ import SatelliteExplorerScreen from '../screens/SatelliteExplorerScreen';
 import LaunchTrackerScreen from '../screens/LaunchTrackerScreen';
 import LaunchDetailsScreen from '../screens/LaunchDetailsScreen';
 import ISSPassScreen from '../screens/ISSPassScreen';
+import AsteroidDetailsScreen from '../screens/AsteroidDetailsScreen';
 import { RootStackParamList } from '../types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -78,6 +79,13 @@ export default function AppNavigator() {
           component={MeteorScreen}
           options={{
             title: 'Meteor Threat Feed',
+          }}
+        />
+        <Stack.Screen
+          name="AsteroidDetails"
+          component={AsteroidDetailsScreen}
+          options={{
+            title: 'Asteroid Radar & Details',
           }}
         />
         <Stack.Screen
