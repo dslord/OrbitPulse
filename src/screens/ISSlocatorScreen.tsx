@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   StyleSheet,
   Text,
@@ -11,8 +11,88 @@ import {
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import { useISSTelemetry } from '../hooks/useISSTelemetry';
 
+const MAX_TRAIL_POINTS = 150;
+
 export default function ISSlocatorScreen() {
   const { telemetry: location, loading, error, refetch } = useISSTelemetry(7000);
+  const [trail, setTrail] = useState<[number, number][]>([]);
+
+  useEffect(() => {
+    if (!location) return;
+
+    const { latitude, longitude } = location;
+
+    // Handle invalid or missing latitude or longitude safely
+    if (
+      typeof latitude !== 'number' ||
+      typeof longitude !== 'number' ||
+      isNaN(latitude) ||
+      isNaN(longitude) ||
+      latitude < -90 ||
+      latitude > 90 ||
+      longitude < -180 ||
+      longitude > 180
+    ) {
+      return;
+    }
+
+    setTrail((prevTrail) => {
+      if (prevTrail.length > 0) {
+        const [lastLon, lastLat] = prevTrail[prevTrail.length - 1];
+        // Do not add duplicate coordinates when ISS position has not meaningfully changed
+        if (Math.abs(lastLon - longitude) < 0.00001 && Math.abs(lastLat - latitude) < 0.00001) {
+          return prevTrail;
+        }
+      }
+
+      const updatedTrail = [...prevTrail, [longitude, latitude] as [number, number]];
+      if (updatedTrail.length > MAX_TRAIL_POINTS) {
+        return updatedTrail.slice(updatedTrail.length - MAX_TRAIL_POINTS);
+      }
+      return updatedTrail;
+    });
+  }, [location]);
+
+  // Compute GeoJSON FeatureCollection handling international date line crossings
+  const trailGeoJson = useMemo<GeoJSON.FeatureCollection<GeoJSON.LineString>>(() => {
+    const segments: [number, number][][] = [];
+    let currentSegment: [number, number][] = [];
+
+    for (const pt of trail) {
+      if (currentSegment.length === 0) {
+        currentSegment.push(pt);
+      } else {
+        const prevPt = currentSegment[currentSegment.length - 1];
+        const lonDiff = Math.abs(pt[0] - prevPt[0]);
+        // Break trail into separate segments if longitude jumps across date line (> 180 deg)
+        if (lonDiff > 180) {
+          if (currentSegment.length >= 2) {
+            segments.push(currentSegment);
+          }
+          currentSegment = [pt];
+        } else {
+          currentSegment.push(pt);
+        }
+      }
+    }
+
+    if (currentSegment.length >= 2) {
+      segments.push(currentSegment);
+    }
+
+    return {
+      type: 'FeatureCollection',
+      features: segments.map((seg, index) => ({
+        type: 'Feature',
+        id: `trail-segment-${index}`,
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates: seg,
+        },
+      })),
+    };
+  }, [trail]);
 
   if (loading && !location) {
     return (
@@ -74,6 +154,18 @@ export default function ISSlocatorScreen() {
                 animationMode="easeTo"
                 animationDuration={1000}
               />
+              <MapLibreGL.ShapeSource id="iss-trail-source" shape={trailGeoJson}>
+                <MapLibreGL.LineLayer
+                  id="iss-trail-layer"
+                  style={{
+                    lineColor: '#00d4ff',
+                    lineWidth: 3,
+                    lineOpacity: 0.85,
+                    lineCap: 'round',
+                    lineJoin: 'round',
+                  }}
+                />
+              </MapLibreGL.ShapeSource>
               <MapLibreGL.MarkerView
                 id="iss-marker"
                 coordinate={[location.longitude, location.latitude]}
