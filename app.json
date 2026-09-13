@@ -1,25 +1,27 @@
 {
   "expo": {
-    "name": "app",
-    "slug": "app",
+    "name": "OrbitPulse",
+    "slug": "orbit-pulse",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0b0d1b"
       },
-      "predictiveBackGestureEnabled": false
+      "package": "com.anonymous.orbitpulse"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-status-bar",
+      "@maplibre/maplibre-react-native"
+    ]
   }
 }
