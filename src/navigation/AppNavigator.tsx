@@ -8,6 +8,8 @@ import MeteorScreen from '../screens/MeteorScreen';
 import UpdatesScreen from '../screens/UpdatesScreen';
 import SpaceNewsScreen from '../screens/SpaceNewsScreen';
 import SatelliteExplorerScreen from '../screens/SatelliteExplorerScreen';
+import LaunchTrackerScreen from '../screens/LaunchTrackerScreen';
+import LaunchDetailsScreen from '../screens/LaunchDetailsScreen';
 import { RootStackParamList } from '../types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -47,6 +49,20 @@ export default function AppNavigator() {
           component={SatelliteExplorerScreen}
           options={{
             title: 'Satellite Explorer',
+          }}
+        />
+        <Stack.Screen
+          name="LaunchTracker"
+          component={LaunchTrackerScreen}
+          options={{
+            title: 'Space Launch Tracker',
+          }}
+        />
+        <Stack.Screen
+          name="LaunchDetails"
+          component={LaunchDetailsScreen}
+          options={{
+            title: 'Launch Details',
           }}
         />
         <Stack.Screen

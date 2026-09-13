@@ -71,7 +71,25 @@ export default function HomeScreen({ navigation }: Props) {
             />
           </TouchableOpacity>
 
-          {/* Option 3: Meteor Threat Feed */}
+          {/* Option 3: Launch Tracker */}
+          <TouchableOpacity
+            style={styles.routeCard}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate('LaunchTracker')}
+          >
+            <View style={styles.cardTextContainer}>
+              <Text style={styles.routeTitle}>Launch Tracker</Text>
+              <Text style={styles.routeSubtitle}>Live Space Missions & Schedules</Text>
+              <Text style={styles.knowMoreText}>View Launches &rarr;</Text>
+            </View>
+            <Text style={styles.numberBadge}>3</Text>
+            <Image
+              source={require('../../assets/launch_icon.png')}
+              style={styles.cardIconLaunch}
+            />
+          </TouchableOpacity>
+
+          {/* Option 4: Meteor Threat Feed */}
           <TouchableOpacity
             style={styles.routeCard}
             activeOpacity={0.8}
@@ -82,14 +100,14 @@ export default function HomeScreen({ navigation }: Props) {
               <Text style={styles.routeSubtitle}>NASA Near-Earth Objects</Text>
               <Text style={styles.knowMoreText}>Analyze Threats &rarr;</Text>
             </View>
-            <Text style={styles.numberBadge}>3</Text>
+            <Text style={styles.numberBadge}>4</Text>
             <Image
               source={require('../../assets/meteor_icon.png')}
               style={styles.cardIconMeteor}
             />
           </TouchableOpacity>
 
-          {/* Option 4: Space Updates */}
+          {/* Option 5: Space Updates */}
           <TouchableOpacity
             style={styles.routeCard}
             activeOpacity={0.8}
@@ -100,7 +118,7 @@ export default function HomeScreen({ navigation }: Props) {
               <Text style={styles.routeSubtitle}>Live Telemetry & News</Text>
               <Text style={styles.knowMoreText}>Read Updates &rarr;</Text>
             </View>
-            <Text style={styles.numberBadge}>4</Text>
+            <Text style={styles.numberBadge}>5</Text>
             <Image
               source={require('../../assets/blog_icon.png')}
               style={styles.cardIconRocket}
@@ -222,6 +240,15 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 5,
     top: -25,
+    zIndex: 3,
+  },
+  cardIconLaunch: {
+    resizeMode: 'contain',
+    height: 120,
+    width: 120,
+    position: 'absolute',
+    right: 0,
+    top: -30,
     zIndex: 3,
   },
 });

@@ -88,6 +88,22 @@ export interface SatelliteItem {
   position: SatellitePosition | null;
 }
 
+export interface LaunchItem {
+  id: string;
+  name: string;
+  net: string;
+  statusName: string;
+  statusAbbrev: string;
+  providerName: string;
+  rocketName: string;
+  locationName: string;
+  padName: string;
+  missionDescription: string;
+  missionType: string;
+  imageUrl: string | null;
+  webcastUrl: string | null;
+}
+
 export type RootStackParamList = {
   Home: undefined;
   ISSlocator: undefined;
@@ -95,4 +111,6 @@ export type RootStackParamList = {
   Updates: undefined;
   SpaceNews: undefined;
   SatelliteExplorer: undefined;
+  LaunchTracker: undefined;
+  LaunchDetails: { launch: LaunchItem };
 };
