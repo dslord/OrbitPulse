@@ -104,6 +104,21 @@ export interface LaunchItem {
   webcastUrl: string | null;
 }
 
+export interface ISSPassItem {
+  id: string;
+  startTime: number;
+  peakTime: number;
+  endTime: number;
+  durationSec: number;
+  maxElevation: number;
+  riseAzimuth: string;
+  peakAzimuth: string;
+  setAzimuth: string;
+  directionSummary: string;
+  visibility: 'Visible' | 'Daylight Pass' | 'Unlit / Shadow' | 'Low Elevation';
+  visibilityDetails: string;
+}
+
 export type RootStackParamList = {
   Home: undefined;
   ISSlocator: undefined;
@@ -113,4 +128,5 @@ export type RootStackParamList = {
   SatelliteExplorer: undefined;
   LaunchTracker: undefined;
   LaunchDetails: { launch: LaunchItem };
+  ISSPass: undefined;
 };

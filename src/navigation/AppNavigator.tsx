@@ -10,6 +10,7 @@ import SpaceNewsScreen from '../screens/SpaceNewsScreen';
 import SatelliteExplorerScreen from '../screens/SatelliteExplorerScreen';
 import LaunchTrackerScreen from '../screens/LaunchTrackerScreen';
 import LaunchDetailsScreen from '../screens/LaunchDetailsScreen';
+import ISSPassScreen from '../screens/ISSPassScreen';
 import { RootStackParamList } from '../types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -63,6 +64,13 @@ export default function AppNavigator() {
           component={LaunchDetailsScreen}
           options={{
             title: 'Launch Details',
+          }}
+        />
+        <Stack.Screen
+          name="ISSPass"
+          component={ISSPassScreen}
+          options={{
+            title: 'ISS Next-Pass & Visibility',
           }}
         />
         <Stack.Screen

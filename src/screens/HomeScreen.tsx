@@ -53,21 +53,21 @@ export default function HomeScreen({ navigation }: Props) {
             />
           </TouchableOpacity>
 
-          {/* Option 2: Satellite Explorer */}
+          {/* Option 2: ISS Next-Pass */}
           <TouchableOpacity
             style={styles.routeCard}
             activeOpacity={0.8}
-            onPress={() => navigation.navigate('SatelliteExplorer')}
+            onPress={() => navigation.navigate('ISSPass')}
           >
             <View style={styles.cardTextContainer}>
-              <Text style={styles.routeTitle}>Satellite Explorer</Text>
-              <Text style={styles.routeSubtitle}>Browse & Track Satellites</Text>
-              <Text style={styles.knowMoreText}>Explore Satellites &rarr;</Text>
+              <Text style={styles.routeTitle}>ISS Next-Pass</Text>
+              <Text style={styles.routeSubtitle}>Pass Times & Horizon Visibility</Text>
+              <Text style={styles.knowMoreText}>Calculate Pass &rarr;</Text>
             </View>
             <Text style={styles.numberBadge}>2</Text>
             <Image
-              source={require('../../assets/rocket_icon.png')}
-              style={styles.cardIconRocket}
+              source={require('../../assets/next_pass.png')}
+              style={styles.cardIconPass}
             />
           </TouchableOpacity>
 
@@ -89,7 +89,25 @@ export default function HomeScreen({ navigation }: Props) {
             />
           </TouchableOpacity>
 
-          {/* Option 4: Meteor Threat Feed */}
+          {/* Option 4: Satellite Explorer */}
+          <TouchableOpacity
+            style={styles.routeCard}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate('SatelliteExplorer')}
+          >
+            <View style={styles.cardTextContainer}>
+              <Text style={styles.routeTitle}>Satellite Explorer</Text>
+              <Text style={styles.routeSubtitle}>Browse & Track Satellites</Text>
+              <Text style={styles.knowMoreText}>Explore Satellites &rarr;</Text>
+            </View>
+            <Text style={styles.numberBadge}>4</Text>
+            <Image
+              source={require('../../assets/rocket_icon.png')}
+              style={styles.cardIconRocket}
+            />
+          </TouchableOpacity>
+
+          {/* Option 5: Meteor Threat Feed */}
           <TouchableOpacity
             style={styles.routeCard}
             activeOpacity={0.8}
@@ -100,14 +118,14 @@ export default function HomeScreen({ navigation }: Props) {
               <Text style={styles.routeSubtitle}>NASA Near-Earth Objects</Text>
               <Text style={styles.knowMoreText}>Analyze Threats &rarr;</Text>
             </View>
-            <Text style={styles.numberBadge}>4</Text>
+            <Text style={styles.numberBadge}>5</Text>
             <Image
               source={require('../../assets/meteor_icon.png')}
               style={styles.cardIconMeteor}
             />
           </TouchableOpacity>
 
-          {/* Option 5: Space Updates */}
+          {/* Option 6: Space Updates */}
           <TouchableOpacity
             style={styles.routeCard}
             activeOpacity={0.8}
@@ -118,7 +136,7 @@ export default function HomeScreen({ navigation }: Props) {
               <Text style={styles.routeSubtitle}>Live Telemetry & News</Text>
               <Text style={styles.knowMoreText}>Read Updates &rarr;</Text>
             </View>
-            <Text style={styles.numberBadge}>5</Text>
+            <Text style={styles.numberBadge}>6</Text>
             <Image
               source={require('../../assets/blog_icon.png')}
               style={styles.cardIconRocket}
@@ -249,6 +267,15 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     top: -30,
+    zIndex: 3,
+  },
+  cardIconPass: {
+    resizeMode: 'contain',
+    height: 115,
+    width: 115,
+    position: 'absolute',
+    right: 0,
+    top: -25,
     zIndex: 3,
   },
 });
