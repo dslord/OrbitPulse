@@ -125,7 +125,25 @@ export default function HomeScreen({ navigation }: Props) {
             />
           </TouchableOpacity>
 
-          {/* Option 6: Launch Tracker */}
+          {/* Option 6: Spacecraft Tracker */}
+          <TouchableOpacity
+            style={styles.routeCard}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate('SpacecraftTracker')}
+          >
+            <View style={styles.cardTextContainer}>
+              <Text style={styles.routeTitle}>Spacecraft Tracker</Text>
+              <Text style={styles.routeSubtitle}>Deep Space Probes & Telemetry</Text>
+              <Text style={styles.knowMoreText}>Track Spacecraft &rarr;</Text>
+            </View>
+            <Text style={styles.numberBadge}>6</Text>
+            <Image
+              source={require('../../assets/spacecraft_tracker.png')}
+              style={styles.cardIconRocket}
+            />
+          </TouchableOpacity>
+
+          {/* Option 7: Launch Tracker */}
           <TouchableOpacity
             style={styles.routeCard}
             activeOpacity={0.8}
@@ -136,14 +154,14 @@ export default function HomeScreen({ navigation }: Props) {
               <Text style={styles.routeSubtitle}>Live Space Missions & Schedules</Text>
               <Text style={styles.knowMoreText}>View Launches &rarr;</Text>
             </View>
-            <Text style={styles.numberBadge}>6</Text>
+            <Text style={styles.numberBadge}>7</Text>
             <Image
               source={require('../../assets/launch_icon.png')}
               style={styles.cardIconLaunch}
             />
           </TouchableOpacity>
 
-          {/* Option 7: Satellite Explorer */}
+          {/* Option 8: Satellite Explorer */}
           <TouchableOpacity
             style={styles.routeCard}
             activeOpacity={0.8}
@@ -154,14 +172,14 @@ export default function HomeScreen({ navigation }: Props) {
               <Text style={styles.routeSubtitle}>Browse & Track Satellites</Text>
               <Text style={styles.knowMoreText}>Explore Satellites &rarr;</Text>
             </View>
-            <Text style={styles.numberBadge}>7</Text>
+            <Text style={styles.numberBadge}>8</Text>
             <Image
               source={require('../../assets/satellite_explorer.png')}
               style={styles.cardIconRocket}
             />
           </TouchableOpacity>
 
-          {/* Option 8: Meteor Threat Feed */}
+          {/* Option 9: Meteor Threat Feed */}
           <TouchableOpacity
             style={styles.routeCard}
             activeOpacity={0.8}
@@ -172,14 +190,14 @@ export default function HomeScreen({ navigation }: Props) {
               <Text style={styles.routeSubtitle}>NASA Near-Earth Objects</Text>
               <Text style={styles.knowMoreText}>Analyze Threats &rarr;</Text>
             </View>
-            <Text style={styles.numberBadge}>8</Text>
+            <Text style={styles.numberBadge}>9</Text>
             <Image
               source={require('../../assets/meteor_icon.png')}
               style={styles.cardIconMeteor}
             />
           </TouchableOpacity>
 
-          {/* Option 9: Space Updates */}
+          {/* Option 10: Space Updates */}
           <TouchableOpacity
             style={styles.routeCard}
             activeOpacity={0.8}
@@ -190,7 +208,7 @@ export default function HomeScreen({ navigation }: Props) {
               <Text style={styles.routeSubtitle}>Live Telemetry & News</Text>
               <Text style={styles.knowMoreText}>Read Updates &rarr;</Text>
             </View>
-            <Text style={styles.numberBadge}>9</Text>
+            <Text style={styles.numberBadge}>10</Text>
             <Image
               source={require('../../assets/rocket_icon.png')}
               style={styles.cardIconRocket}

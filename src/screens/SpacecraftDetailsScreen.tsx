@@ -1,0 +1,636 @@
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ImageBackground,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  Linking,
+  Image,
+} from 'react-native';
+import MapLibreGL from '@maplibre/maplibre-react-native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types';
+import {
+  fetchSpacecraftGPData,
+  calculateOrbitalVisualization,
+} from '../services/satelliteService';
+import { SatelliteGPData } from '../types';
+
+type Props = NativeStackScreenProps<RootStackParamList, 'SpacecraftDetails'>;
+
+export default function SpacecraftDetailsScreen({ route }: Props) {
+  const { spacecraft } = route.params;
+
+  const [gpData, setGpData] = useState<SatelliteGPData | null>(null);
+  const [loading, setLoading] = useState<boolean>(spacecraft.hasLiveTracking);
+  const [fetchError, setFetchError] = useState<boolean>(false);
+  const [nowMs, setNowMs] = useState<number>(Date.now());
+  const [imageError, setImageError] = useState<boolean>(false);
+
+  // Auto-refresh ticker for live position updates every 2 seconds
+  useEffect(() => {
+    if (!spacecraft.hasLiveTracking) return;
+
+    const timer = setInterval(() => {
+      setNowMs(Date.now());
+    }, 2000);
+    return () => clearInterval(timer);
+  }, [spacecraft.hasLiveTracking]);
+
+  // Load GP orbital data from CelesTrak if spacecraft supports live tracking
+  const loadLiveTelemetry = useCallback(async () => {
+    if (!spacecraft.hasLiveTracking || !spacecraft.noradCatId) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setFetchError(false);
+      const data = await fetchSpacecraftGPData(spacecraft.noradCatId);
+      if (data) {
+        setGpData(data);
+      } else {
+        setFetchError(true);
+      }
+    } catch {
+      setFetchError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [spacecraft.hasLiveTracking, spacecraft.noradCatId]);
+
+  useEffect(() => {
+    loadLiveTelemetry();
+  }, [loadLiveTelemetry]);
+
+  // Compute live orbital state atomically using satelliteService pipeline
+  const orbitalState = useMemo(() => {
+    if (!gpData) return null;
+    return calculateOrbitalVisualization(gpData, nowMs, `sc-${spacecraft.id}`);
+  }, [gpData, nowMs, spacecraft.id]);
+
+  const handleOpenWebsite = () => {
+    if (spacecraft.websiteUrl) {
+      Linking.openURL(spacecraft.websiteUrl).catch(() => {});
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <ImageBackground
+        source={require('../../assets/bg_image.png')}
+        style={styles.background}
+        resizeMode="cover"
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* HERO BANNER OR IMAGE */}
+          {spacecraft.imageUrl && !imageError ? (
+            <View style={styles.heroImageContainer}>
+              <Image
+                source={{ uri: spacecraft.imageUrl }}
+                style={styles.heroImage}
+                resizeMode="cover"
+                onError={() => setImageError(true)}
+              />
+              <View style={styles.heroOverlay} />
+            </View>
+          ) : (
+            <View style={styles.heroFallbackBanner}>
+              <Text style={styles.heroFallbackText}>{spacecraft.agencyAbbrev}</Text>
+              <Text style={styles.heroFallbackSubtext}>{spacecraft.region}</Text>
+            </View>
+          )}
+
+          {/* MAIN HEADER CARD */}
+          <View style={styles.headerCard}>
+            <View style={styles.headerTopRow}>
+              <View style={styles.agencyBadge}>
+                <Text style={styles.agencyBadgeText}>{spacecraft.agencyAbbrev}</Text>
+              </View>
+
+              <View
+                style={[
+                  styles.trackingPill,
+                  spacecraft.hasLiveTracking ? styles.livePill : styles.staticPill,
+                ]}
+              >
+                <View
+                  style={[
+                    styles.statusDot,
+                    { backgroundColor: spacecraft.hasLiveTracking ? '#10b981' : '#00d4ff' },
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.trackingText,
+                    { color: spacecraft.hasLiveTracking ? '#10b981' : '#00d4ff' },
+                  ]}
+                >
+                  {spacecraft.hasLiveTracking ? 'LIVE TELEMETRY' : 'TRAJECTORY VIEW'}
+                </Text>
+              </View>
+            </View>
+
+            <Text style={styles.titleText}>{spacecraft.name}</Text>
+            <Text style={styles.agencyFullName}>{spacecraft.agency}</Text>
+          </View>
+
+          {/* LIVE TELEMETRY / MAP SECTION (For Earth LEO Spacecraft) */}
+          {spacecraft.hasLiveTracking ? (
+            <View style={styles.sectionCard}>
+              <View style={styles.sectionHeaderRow}>
+                <Text style={styles.sectionTitle}>LIVE EARTH ORBITAL TELEMETRY</Text>
+                <TouchableOpacity onPress={loadLiveTelemetry} style={styles.refreshBtn}>
+                  <Text style={styles.refreshBtnText}>↻ Refresh</Text>
+                </TouchableOpacity>
+              </View>
+
+              {loading ? (
+                <View style={styles.loadingBox}>
+                  <ActivityIndicator size="small" color="#00d4ff" />
+                  <Text style={styles.loadingText}>Fetching orbital telemetry...</Text>
+                </View>
+              ) : fetchError || !orbitalState ? (
+                <View style={styles.fallbackBox}>
+                  <Text style={styles.fallbackTitle}>Telemetry Unavailable</Text>
+                  <Text style={styles.fallbackText}>
+                    Live orbital telemetry server is currently unreachable. Displaying standard mission specifications below.
+                  </Text>
+                </View>
+              ) : (
+                <>
+                  {/* MAP VISUALIZATION */}
+                  <View style={styles.mapContainer}>
+                    <MapLibreGL.MapView
+                      style={styles.map}
+                      mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+                      logoEnabled={false}
+                      attributionEnabled={false}
+                    >
+                      <MapLibreGL.Camera
+                        centerCoordinate={[
+                          orbitalState.currentPos.longitude,
+                          orbitalState.currentPos.latitude,
+                        ]}
+                        zoomLevel={1.8}
+                        animationMode="flyTo"
+                      />
+
+                      {/* Orbital Trail */}
+                      {orbitalState.trailGeoJson.features.length > 0 && (
+                        <MapLibreGL.ShapeSource
+                          id={`sc-trail-src-${spacecraft.id}`}
+                          shape={orbitalState.trailGeoJson}
+                        >
+                          <MapLibreGL.LineLayer
+                            id={`sc-trail-layer-${spacecraft.id}`}
+                            style={{
+                              lineColor: '#00d4ff',
+                              lineWidth: 2.5,
+                              lineOpacity: 0.85,
+                            }}
+                          />
+                        </MapLibreGL.ShapeSource>
+                      )}
+
+                      {/* Current Spacecraft Position Marker */}
+                      <MapLibreGL.MarkerView
+                        id={`sc-marker-${spacecraft.id}`}
+                        coordinate={[
+                          orbitalState.currentPos.longitude,
+                          orbitalState.currentPos.latitude,
+                        ]}
+                      >
+                        <View style={styles.markerContainer}>
+                          <View style={styles.markerBadge}>
+                            <Text style={styles.markerBadgeText}>{spacecraft.name}</Text>
+                          </View>
+                          <Image
+                            source={require('../../assets/iss_icon.png')}
+                            style={styles.satMarkerIcon}
+                          />
+                        </View>
+                      </MapLibreGL.MarkerView>
+                    </MapLibreGL.MapView>
+                  </View>
+
+                  {/* TELEMETRY METRICS GRID */}
+                  <View style={styles.telemetryGrid}>
+                    <View style={styles.gridItem}>
+                      <Text style={styles.gridLabel}>Latitude</Text>
+                      <Text style={styles.gridValue}>
+                        {orbitalState.currentPos.latitude.toFixed(3)}°
+                      </Text>
+                    </View>
+                    <View style={styles.gridItem}>
+                      <Text style={styles.gridLabel}>Longitude</Text>
+                      <Text style={styles.gridValue}>
+                        {orbitalState.currentPos.longitude.toFixed(3)}°
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={[styles.gridRow, { marginTop: 10 }]}>
+                    <View style={styles.gridItem}>
+                      <Text style={styles.gridLabel}>Altitude</Text>
+                      <Text style={styles.gridValue}>
+                        {Math.round(orbitalState.currentPos.altitudeKm)} km
+                      </Text>
+                    </View>
+                    <View style={styles.gridItem}>
+                      <Text style={styles.gridLabel}>Orbital Velocity</Text>
+                      <Text style={styles.gridValue}>
+                        {Math.round(orbitalState.currentPos.velocityKmH).toLocaleString('en-US')}{' '}
+                        km/h
+                      </Text>
+                    </View>
+                  </View>
+                </>
+              )}
+            </View>
+          ) : (
+            /* TRAJECTORY & DEEP SPACE ORBIT CARD */
+            <View style={styles.sectionCard}>
+              <Text style={styles.sectionTitle}>TRAJECTORY & ORBITAL REGION</Text>
+              <View style={styles.trajectoryBox}>
+                <Text style={styles.trajectoryRegion}>{spacecraft.region.toUpperCase()}</Text>
+                <Text style={styles.trajectoryDest}>{spacecraft.destination}</Text>
+                <Text style={styles.trajectoryNote}>
+                  Live Earth-orbit telemetry unavailable for deep-space / planetary mission. Displaying verified mission trajectory parameters.
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* SPECIFICATIONS GRID */}
+          <View style={styles.sectionCard}>
+            <Text style={styles.sectionTitle}>SPACECRAFT SPECIFICATIONS</Text>
+
+            <View style={styles.gridRow}>
+              <View style={styles.gridItem}>
+                <Text style={styles.gridLabel}>Mission / Program</Text>
+                <Text style={styles.gridValue}>{spacecraft.mission}</Text>
+              </View>
+              <View style={styles.gridItem}>
+                <Text style={styles.gridLabel}>Operational Status</Text>
+                <Text style={styles.gridValue}>{spacecraft.status}</Text>
+              </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.gridRow}>
+              <View style={styles.gridItem}>
+                <Text style={styles.gridLabel}>Launch Date</Text>
+                <Text style={styles.gridValue}>{spacecraft.launchDate}</Text>
+              </View>
+              <View style={styles.gridItem}>
+                <Text style={styles.gridLabel}>Target Destination</Text>
+                <Text style={styles.gridValue}>{spacecraft.destination}</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* OVERVIEW / DESCRIPTION */}
+          <View style={styles.sectionCard}>
+            <Text style={styles.sectionTitle}>MISSION OVERVIEW</Text>
+            <Text style={styles.descriptionText}>{spacecraft.description}</Text>
+          </View>
+
+          {/* PRIMARY OBJECTIVES */}
+          {spacecraft.primaryObjectives && spacecraft.primaryObjectives.length > 0 && (
+            <View style={styles.sectionCard}>
+              <Text style={styles.sectionTitle}>PRIMARY OBJECTIVES</Text>
+              {spacecraft.primaryObjectives.map((obj, index) => (
+                <View key={index} style={styles.objectiveRow}>
+                  <Text style={styles.objectiveBullet}>•</Text>
+                  <Text style={styles.objectiveText}>{obj}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* OFFICIAL WEBSITE LINK */}
+          {spacecraft.websiteUrl && (
+            <TouchableOpacity
+              style={styles.websiteButton}
+              activeOpacity={0.8}
+              onPress={handleOpenWebsite}
+            >
+              <Text style={styles.websiteButtonText}>Visit Official Mission Website &rarr;</Text>
+            </TouchableOpacity>
+          )}
+        </ScrollView>
+      </ImageBackground>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#0b0d1b',
+  },
+  background: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 40,
+  },
+  heroImageContainer: {
+    height: 180,
+    borderRadius: 18,
+    overflow: 'hidden',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 212, 255, 0.2)',
+  },
+  heroImage: {
+    width: '100%',
+    height: '100%',
+  },
+  heroOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(11, 13, 27, 0.3)',
+  },
+  heroFallbackBanner: {
+    height: 110,
+    backgroundColor: '#161936',
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 212, 255, 0.2)',
+  },
+  heroFallbackText: {
+    color: '#00d4ff',
+    fontSize: 22,
+    fontWeight: '900',
+    letterSpacing: 2,
+  },
+  heroFallbackSubtext: {
+    color: '#94a3b8',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  headerCard: {
+    backgroundColor: '#161936',
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  headerTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  agencyBadge: {
+    backgroundColor: 'rgba(0, 212, 255, 0.15)',
+    borderRadius: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 212, 255, 0.3)',
+  },
+  agencyBadgeText: {
+    color: '#00d4ff',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  trackingPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  livePill: {
+    borderColor: 'rgba(16, 185, 129, 0.4)',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+  },
+  staticPill: {
+    borderColor: 'rgba(0, 212, 255, 0.3)',
+    backgroundColor: 'rgba(0, 212, 255, 0.08)',
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 6,
+  },
+  trackingText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  titleText: {
+    color: '#ffffff',
+    fontSize: 22,
+    fontWeight: '900',
+    lineHeight: 28,
+  },
+  agencyFullName: {
+    color: '#94a3b8',
+    fontSize: 12,
+    marginTop: 4,
+    fontWeight: '500',
+  },
+  sectionCard: {
+    backgroundColor: '#161936',
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    color: '#00d4ff',
+    fontSize: 12,
+    fontWeight: 'bold',
+    letterSpacing: 1,
+  },
+  refreshBtn: {
+    backgroundColor: 'rgba(0, 212, 255, 0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  refreshBtnText: {
+    color: '#00d4ff',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  loadingBox: {
+    padding: 24,
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: '#00d4ff',
+    fontSize: 12,
+    marginTop: 8,
+  },
+  fallbackBox: {
+    backgroundColor: '#0b0d1b',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  fallbackTitle: {
+    color: '#f59e0b',
+    fontSize: 13,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  fallbackText: {
+    color: '#94a3b8',
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  mapContainer: {
+    height: 180,
+    borderRadius: 14,
+    overflow: 'hidden',
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 212, 255, 0.2)',
+  },
+  map: {
+    width: '100%',
+    height: '100%',
+  },
+  markerContainer: {
+    alignItems: 'center',
+  },
+  markerBadge: {
+    backgroundColor: '#00d4ff',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    marginBottom: 2,
+  },
+  markerBadgeText: {
+    color: '#0b0d1b',
+    fontSize: 9,
+    fontWeight: 'bold',
+  },
+  satMarkerIcon: {
+    width: 28,
+    height: 28,
+    resizeMode: 'contain',
+  },
+  telemetryGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  trajectoryBox: {
+    backgroundColor: '#0b0d1b',
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 212, 255, 0.15)',
+  },
+  trajectoryRegion: {
+    color: '#00d4ff',
+    fontSize: 13,
+    fontWeight: 'bold',
+    letterSpacing: 1,
+  },
+  trajectoryDest: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginTop: 4,
+  },
+  trajectoryNote: {
+    color: '#64748b',
+    fontSize: 11,
+    lineHeight: 16,
+    marginTop: 8,
+  },
+  gridRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  gridItem: {
+    flex: 1,
+    marginRight: 8,
+  },
+  gridLabel: {
+    color: '#64748b',
+    fontSize: 10,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+  gridValue: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '700',
+    marginTop: 3,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    marginVertical: 12,
+  },
+  descriptionText: {
+    color: '#cbd5e1',
+    fontSize: 13,
+    lineHeight: 20,
+  },
+  objectiveRow: {
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  objectiveBullet: {
+    color: '#00d4ff',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginRight: 8,
+    lineHeight: 18,
+  },
+  objectiveText: {
+    color: '#cbd5e1',
+    fontSize: 13,
+    lineHeight: 18,
+    flex: 1,
+  },
+  websiteButton: {
+    backgroundColor: '#0b0d1b',
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#00d4ff',
+    marginTop: 4,
+  },
+  websiteButtonText: {
+    color: '#00d4ff',
+    fontSize: 13,
+    fontWeight: 'bold',
+  },
+});

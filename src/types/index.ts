@@ -187,6 +187,38 @@ export interface MissionItem {
   imageUrl?: string;
 }
 
+export type SpacecraftOrbitRegion =
+  | 'Earth Orbit'
+  | 'Deep Space'
+  | 'Lunar Orbit'
+  | 'Mars Orbit'
+  | 'Jovian System'
+  | 'Solar Orbit';
+
+export type SpacecraftTrackingStatus =
+  | 'Live Telemetry'
+  | 'Trajectory / Orbit View'
+  | 'Telemetry Unavailable';
+
+export interface SpacecraftItem {
+  id: string;
+  name: string;
+  mission: string;
+  agency: string;
+  agencyAbbrev: string;
+  noradCatId?: number;
+  region: SpacecraftOrbitRegion;
+  status: 'Active' | 'Completed' | 'En Route';
+  trackingType: SpacecraftTrackingStatus;
+  launchDate: string;
+  destination: string;
+  description: string;
+  primaryObjectives: string[];
+  websiteUrl?: string;
+  imageUrl?: string;
+  hasLiveTracking: boolean;
+}
+
 export type RootStackParamList = {
   Home: undefined;
   ISSlocator: undefined;
@@ -202,4 +234,6 @@ export type RootStackParamList = {
   SpaceAgencies: undefined;
   MissionExplorer: undefined;
   MissionDetails: { mission: MissionItem };
+  SpacecraftTracker: undefined;
+  SpacecraftDetails: { spacecraft: SpacecraftItem };
 };

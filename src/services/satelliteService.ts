@@ -248,6 +248,36 @@ export async function fetchISSGPData(): Promise<SatelliteGPData | null> {
 }
 
 /**
+ * Fetches real GP orbital data for a specific spacecraft by NORAD CATNR
+ */
+export async function fetchSpacecraftGPData(
+  noradId: number
+): Promise<SatelliteGPData | null> {
+  try {
+    const url = `https://celestrak.org/NORAD/elements/gp.php?CATNR=${noradId}&FORMAT=json`;
+    const response = await fetch(url, {
+      headers: { Accept: 'application/json' },
+    });
+
+    if (!response.ok) return null;
+
+    const data: SatelliteGPData[] = await response.json();
+    if (
+      Array.isArray(data) &&
+      data.length > 0 &&
+      data[0] &&
+      typeof data[0].NORAD_CAT_ID === 'number' &&
+      data[0].NORAD_CAT_ID === noradId
+    ) {
+      return data[0];
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Converts orbit coordinate points [longitude, latitude] into a GeoJSON FeatureCollection,
  * automatically splitting line segments across the antimeridian (|lon2 - lon1| > 180)
  * with precise boundary interpolation at +/-180 degrees to eliminate line gaps.
