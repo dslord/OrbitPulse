@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { fetchSatellites, calculateSatellitePosition } from '../services/satelliteService';
+import { fetchSatellitesWithMeta, calculateSatellitePosition } from '../services/satelliteService';
 import { SatelliteCategory, SatelliteItem, SatelliteGPData } from '../types';
+import { getCleanErrorMessage } from '../utils/errorUtils';
 
 interface UseSatelliteExplorerReturn {
   category: SatelliteCategory;
@@ -13,6 +14,8 @@ interface UseSatelliteExplorerReturn {
   allSatellitesCount: number;
   loading: boolean;
   error: string | null;
+  isCached: boolean;
+  cachedAt: number | null;
   lastUpdated: number | null;
   refetch: () => Promise<void>;
 }
@@ -27,6 +30,8 @@ export function useSatelliteExplorer(
   const [selectedSatId, setSelectedSatId] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isCached, setIsCached] = useState<boolean>(false);
+  const [cachedAt, setCachedAt] = useState<number | null>(null);
   const [lastUpdated, setLastUpdated] = useState<number | null>(null);
 
   // Load satellite catalog from CelesTrak API
@@ -34,8 +39,11 @@ export function useSatelliteExplorer(
     try {
       setLoading(true);
       setError(null);
-      const gpList = await fetchSatellites(cat);
+      const res = await fetchSatellitesWithMeta(cat);
+      const gpList = res.data;
       setRawGpList(gpList);
+      setIsCached(res.source === 'cache');
+      setCachedAt(res.cachedAt || null);
 
       const now = Date.now();
       const initialItems: SatelliteItem[] = gpList.map((gp) => ({
@@ -63,11 +71,8 @@ export function useSatelliteExplorer(
       }
     } catch (err: unknown) {
       console.error('Error loading satellite category data:', err);
-      if (err instanceof Error) {
-        setError(err.message || 'Unable to connect to satellite telemetry service.');
-      } else {
-        setError('Failed to fetch satellite telemetry.');
-      }
+      const cleanMsg = getCleanErrorMessage(err, 'Satellite telemetry is');
+      setError(cleanMsg);
       setLoading(false);
     }
   }, []);
@@ -138,6 +143,8 @@ export function useSatelliteExplorer(
     allSatellitesCount: satellites.length,
     loading,
     error,
+    isCached,
+    cachedAt,
     lastUpdated,
     refetch,
   };

@@ -1,17 +1,24 @@
 import { SatelliteCategory, SatelliteGPData, SatellitePosition } from '../types';
+import { saveToCache, getFromCache, CachedResult } from './cacheService';
+import { getCleanErrorMessage } from '../utils/errorUtils';
 
 const CELESTRAK_BASE_URL = 'https://celestrak.org/NORAD/elements/gp.php';
 
 const EARTH_MU = 398600.4418; // km^3/s^2
 const EARTH_RADIUS = 6378.137; // km
+const SATELLITE_CACHE_KEY_PREFIX = 'satellite_category_';
+const MAX_SATELLITE_CACHE_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+export interface SatellitesResult extends CachedResult<SatelliteGPData[]> {}
 
 /**
- * Fetches real satellite orbital GP data from CelesTrak public HTTPS API
+ * Fetches real satellite orbital GP data from CelesTrak public HTTPS API with persistent cache fallback.
  */
-export async function fetchSatellites(
+export async function fetchSatellitesWithMeta(
   category: SatelliteCategory = 'visual',
   timeoutMs: number = 10000
-): Promise<SatelliteGPData[]> {
+): Promise<SatellitesResult> {
+  const cacheKey = `${SATELLITE_CACHE_KEY_PREFIX}${category}`;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -27,17 +34,34 @@ export async function fetchSatellites(
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      throw new Error(`CelesTrak satellite API responded with status ${response.status}`);
+      const cached = await getFromCache<SatelliteGPData[]>(cacheKey);
+      if (cached && Array.isArray(cached.data) && cached.data.length > 0) {
+        return {
+          data: cached.data,
+          source: 'cache',
+          cachedAt: cached.cachedAt,
+          isStale: Date.now() - cached.cachedAt > MAX_SATELLITE_CACHE_AGE_MS,
+        };
+      }
+      throw new Error(`Satellite API error (HTTP ${response.status})`);
     }
 
     const data: SatelliteGPData[] = await response.json();
 
     if (!Array.isArray(data)) {
+      const cached = await getFromCache<SatelliteGPData[]>(cacheKey);
+      if (cached && Array.isArray(cached.data) && cached.data.length > 0) {
+        return {
+          data: cached.data,
+          source: 'cache',
+          cachedAt: cached.cachedAt,
+          isStale: Date.now() - cached.cachedAt > MAX_SATELLITE_CACHE_AGE_MS,
+        };
+      }
       throw new Error('Invalid response payload received from CelesTrak API');
     }
 
-    // Filter valid GP objects with NORAD ID & orbital parameters
-    return data.filter(
+    const validData = data.filter(
       (item) =>
         item &&
         typeof item.NORAD_CAT_ID === 'number' &&
@@ -50,16 +74,43 @@ export async function fetchSatellites(
         typeof item.MEAN_ANOMALY === 'number' &&
         Boolean(item.EPOCH)
     );
+
+    // Save to persistent cache
+    saveToCache(cacheKey, validData);
+
+    return {
+      data: validData,
+      source: 'live',
+      cachedAt: Date.now(),
+      isStale: false,
+    };
   } catch (err: unknown) {
     clearTimeout(timeoutId);
-    if (err instanceof Error) {
-      if (err.name === 'AbortError') {
-        throw new Error('Connection to CelesTrak satellite server timed out.');
-      }
-      throw err;
+
+    const cached = await getFromCache<SatelliteGPData[]>(cacheKey);
+    if (cached && Array.isArray(cached.data) && cached.data.length > 0) {
+      return {
+        data: cached.data,
+        source: 'cache',
+        cachedAt: cached.cachedAt,
+        isStale: Date.now() - cached.cachedAt > MAX_SATELLITE_CACHE_AGE_MS,
+      };
     }
-    throw new Error('Failed to fetch satellite orbital data.');
+
+    const cleanMsg = getCleanErrorMessage(err, 'Satellite data is');
+    throw new Error(cleanMsg);
   }
+}
+
+/**
+ * Backward-compatible helper returning SatelliteGPData[] directly.
+ */
+export async function fetchSatellites(
+  category: SatelliteCategory = 'visual',
+  timeoutMs: number = 10000
+): Promise<SatelliteGPData[]> {
+  const result = await fetchSatellitesWithMeta(category, timeoutMs);
+  return result.data;
 }
 
 /**

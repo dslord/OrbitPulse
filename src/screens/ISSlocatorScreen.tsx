@@ -17,7 +17,7 @@ import {
 import { SatelliteGPData } from '../types';
 
 export default function ISSlocatorScreen() {
-  const { telemetry: location, loading, error, refetch } = useISSTelemetry(7000);
+  const { telemetry: location, loading, error, isCached, refetch } = useISSTelemetry(7000);
   const [issGpData, setIssGpData] = useState<SatelliteGPData | null>(null);
 
   // Fetch real ISS orbital GP parameters once on mount (failure-safe)

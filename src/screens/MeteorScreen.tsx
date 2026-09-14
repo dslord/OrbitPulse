@@ -14,6 +14,7 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { fetchMeteorFeed } from '../services/nasaNeoService';
 import { MeteorObject, RootStackParamList } from '../types';
+import { getCleanErrorMessage } from '../utils/errorUtils';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Meteor'>;
 
@@ -35,7 +36,8 @@ export default function MeteorScreen({ navigation }: Props) {
       setLoading(false);
     } catch (err: any) {
       console.error('Error fetching NASA NEO meteors:', err.message);
-      setError(err.message || 'Failed to fetch near-earth objects data.');
+      const cleanMsg = getCleanErrorMessage(err, 'Near-Earth Object feed is');
+      setError(cleanMsg);
       setLoading(false);
     }
   }, []);

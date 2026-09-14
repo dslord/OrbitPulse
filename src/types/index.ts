@@ -9,6 +9,7 @@ export interface ISSTelemetry {
   velocity: number;
   visibility: string;
   timestamp: number;
+  isCached?: boolean;
 }
 
 export interface MeteorApproachData {

@@ -1,6 +1,10 @@
 import { SpaceNewsArticle } from '../types';
+import { saveToCache, getFromCache, CachedResult } from './cacheService';
+import { getCleanErrorMessage } from '../utils/errorUtils';
 
 const SNAPI_URL = 'https://api.spaceflightnewsapi.net/v4/articles/';
+const NEWS_CACHE_KEY_PREFIX = 'space_news_feed_';
+const MAX_NEWS_CACHE_AGE_MS = 12 * 60 * 60 * 1000; // 12 hours
 
 interface SNAPIResponse {
   count: number;
@@ -9,42 +13,16 @@ interface SNAPIResponse {
   results: SpaceNewsArticle[];
 }
 
-// In-memory cache & rate limit protection
-let newsCache: {
-  articles: SpaceNewsArticle[];
-  timestamp: number;
-} | null = null;
-
-let rateLimitCooldownUntil = 0;
-const CACHE_TTL_MS = 60 * 1000; // 60-second cache window
-const RATE_LIMIT_COOLDOWN_MS = 60 * 1000; // 60-second rate-limit cooldown
+export interface SpaceNewsResult extends CachedResult<SpaceNewsArticle[]> {}
 
 /**
- * Fetches recent live spaceflight news articles from Spaceflight News API (SNAPI v4).
- * @param limit Number of articles to retrieve (default: 10)
- * @param search Optional search query string to filter articles
- * @param forceRefresh Force a new network request bypassing cache
- * @returns Array of SpaceNewsArticle objects sorted by newest publication date
+ * Fetches recent live spaceflight news articles with persistent cache fallback & metadata.
  */
-export async function fetchSpaceNews(
+export async function fetchSpaceNewsWithMeta(
   limit: number = 10,
-  search?: string,
-  forceRefresh: boolean = false
-): Promise<SpaceNewsArticle[]> {
-  const now = Date.now();
-
-  // 1. Check in-memory cache if not forcing refresh
-  if (!forceRefresh && newsCache && now - newsCache.timestamp < CACHE_TTL_MS) {
-    return newsCache.articles.slice(0, limit);
-  }
-
-  // 2. Check active 429 rate limit cooldown
-  if (!forceRefresh && now < rateLimitCooldownUntil) {
-    if (newsCache && newsCache.articles.length > 0) {
-      return newsCache.articles.slice(0, limit);
-    }
-    throw new Error('Space news is temporarily unavailable.');
-  }
+  search?: string
+): Promise<SpaceNewsResult> {
+  const cacheKey = `${NEWS_CACHE_KEY_PREFIX}${search ? search.trim().toLowerCase() : 'all'}`;
 
   try {
     let url = `${SNAPI_URL}?limit=${limit}&ordering=-published_at`;
@@ -52,43 +30,86 @@ export async function fetchSpaceNews(
       url += `&search=${encodeURIComponent(search.trim())}`;
     }
 
-    const response = await fetch(url);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
 
     if (response.status === 429) {
-      rateLimitCooldownUntil = Date.now() + RATE_LIMIT_COOLDOWN_MS;
-      if (newsCache && newsCache.articles.length > 0) {
-        return newsCache.articles.slice(0, limit);
+      const cached = await getFromCache<SpaceNewsArticle[]>(cacheKey);
+      if (cached && Array.isArray(cached.data) && cached.data.length > 0) {
+        return {
+          data: cached.data.slice(0, limit),
+          source: 'cache',
+          cachedAt: cached.cachedAt,
+          isStale: Date.now() - cached.cachedAt > MAX_NEWS_CACHE_AGE_MS,
+        };
       }
       throw new Error('Space news is temporarily unavailable.');
     }
 
     if (!response.ok) {
-      if (newsCache && newsCache.articles.length > 0) {
-        return newsCache.articles.slice(0, limit);
+      const cached = await getFromCache<SpaceNewsArticle[]>(cacheKey);
+      if (cached && Array.isArray(cached.data) && cached.data.length > 0) {
+        return {
+          data: cached.data.slice(0, limit),
+          source: 'cache',
+          cachedAt: cached.cachedAt,
+          isStale: Date.now() - cached.cachedAt > MAX_NEWS_CACHE_AGE_MS,
+        };
       }
-      throw new Error('Space news is temporarily unavailable.');
+      throw new Error(`Space news server error (HTTP ${response.status})`);
     }
 
     const data: SNAPIResponse = await response.json();
-
     if (!data || !Array.isArray(data.results)) {
-      if (newsCache && newsCache.articles.length > 0) {
-        return newsCache.articles.slice(0, limit);
+      const cached = await getFromCache<SpaceNewsArticle[]>(cacheKey);
+      if (cached && Array.isArray(cached.data) && cached.data.length > 0) {
+        return {
+          data: cached.data.slice(0, limit),
+          source: 'cache',
+          cachedAt: cached.cachedAt,
+          isStale: Date.now() - cached.cachedAt > MAX_NEWS_CACHE_AGE_MS,
+        };
       }
-      throw new Error('Space news is temporarily unavailable.');
+      throw new Error('Invalid space news response received.');
     }
 
-    // Cache successful results
-    newsCache = {
-      articles: data.results,
-      timestamp: Date.now(),
+    // Save successful live response to persistent disk cache
+    saveToCache(cacheKey, data.results);
+
+    return {
+      data: data.results.slice(0, limit),
+      source: 'live',
+      cachedAt: Date.now(),
+      isStale: false,
     };
-
-    return data.results.slice(0, limit);
-  } catch (error: any) {
-    if (newsCache && newsCache.articles.length > 0) {
-      return newsCache.articles.slice(0, limit);
+  } catch (err: any) {
+    // Attempt persistent cache fallback
+    const cached = await getFromCache<SpaceNewsArticle[]>(cacheKey);
+    if (cached && Array.isArray(cached.data) && cached.data.length > 0) {
+      return {
+        data: cached.data.slice(0, limit),
+        source: 'cache',
+        cachedAt: cached.cachedAt,
+        isStale: Date.now() - cached.cachedAt > MAX_NEWS_CACHE_AGE_MS,
+      };
     }
-    throw new Error(error.message || 'Space news is temporarily unavailable.');
+
+    // No cache available — throw clean, user-friendly error string
+    const cleanMsg = getCleanErrorMessage(err, 'Space news is');
+    throw new Error(cleanMsg);
   }
+}
+
+/**
+ * Fetches recent live spaceflight news articles from Spaceflight News API (SNAPI v4).
+ */
+export async function fetchSpaceNews(
+  limit: number = 10,
+  search?: string
+): Promise<SpaceNewsArticle[]> {
+  const result = await fetchSpaceNewsWithMeta(limit, search);
+  return result.data;
 }

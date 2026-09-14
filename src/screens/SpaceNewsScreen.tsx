@@ -12,13 +12,15 @@ import {
   Linking,
   ListRenderItemInfo,
 } from 'react-native';
-import { fetchSpaceNews } from '../services/spaceNewsService';
+import { fetchSpaceNewsWithMeta } from '../services/spaceNewsService';
 import { SpaceNewsArticle } from '../types';
+import { getCleanErrorMessage } from '../utils/errorUtils';
 
 export default function SpaceNewsScreen() {
   const [articles, setArticles] = useState<SpaceNewsArticle[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isCached, setIsCached] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'isro'>('all');
 
@@ -27,11 +29,13 @@ export default function SpaceNewsScreen() {
     setError(null);
     try {
       const searchTerm = filter === 'isro' ? 'ISRO' : undefined;
-      const data = await fetchSpaceNews(20, searchTerm);
-      setArticles(data);
+      const res = await fetchSpaceNewsWithMeta(20, searchTerm);
+      setArticles(res.data);
+      setIsCached(res.source === 'cache');
     } catch (err: any) {
       console.error('Failed to load space news feed:', err.message || err);
-      setError(err.message || 'Unable to fetch space news feed.');
+      const cleanMsg = getCleanErrorMessage(err, 'Space news is');
+      setError(cleanMsg);
     } finally {
       setLoading(false);
     }

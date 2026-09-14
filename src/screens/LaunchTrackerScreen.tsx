@@ -16,6 +16,7 @@ import {
   calculateLaunchCountdown,
 } from '../services/launchService';
 import { LaunchItem, RootStackParamList } from '../types';
+import { getCleanErrorMessage } from '../utils/errorUtils';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'LaunchTracker'>;
 
@@ -55,7 +56,8 @@ export default function LaunchTrackerScreen({ navigation }: Props) {
         }
       });
     } catch (err: any) {
-      setError(err.message || 'Unable to fetch upcoming launches');
+      const cleanMsg = getCleanErrorMessage(err, 'Launch schedule is');
+      setError(cleanMsg);
     } finally {
       setLoading(false);
       setRefreshing(false);

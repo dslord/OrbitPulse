@@ -23,6 +23,7 @@ import {
   SpaceNewsArticle,
   RootStackParamList,
 } from '../types';
+import { getCleanErrorMessage } from '../utils/errorUtils';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'TodayInSpace'>;
 
@@ -75,14 +76,14 @@ export default function TodayInSpaceScreen({ navigation }: Props) {
       fetchUpcomingLaunches(),
       fetchISSTelemetry(8000),
       fetchMeteorFeed(),
-      fetchSpaceNews(5, undefined, isRefresh),
+      fetchSpaceNews(5),
     ]);
 
     // Handle Launches result
     if (results[0].status === 'fulfilled') {
       setLaunches(results[0].value);
     } else {
-      setLaunchesError(results[0].reason?.message || 'Failed to load upcoming launches.');
+      setLaunchesError(getCleanErrorMessage(results[0].reason, 'Launch schedule is'));
     }
     setLaunchesLoading(false);
 
@@ -90,7 +91,7 @@ export default function TodayInSpaceScreen({ navigation }: Props) {
     if (results[1].status === 'fulfilled') {
       setIssData(results[1].value);
     } else {
-      setIssError(results[1].reason?.message || 'Failed to load live ISS telemetry.');
+      setIssError(getCleanErrorMessage(results[1].reason, 'ISS telemetry is'));
     }
     setIssLoading(false);
 
@@ -98,7 +99,7 @@ export default function TodayInSpaceScreen({ navigation }: Props) {
     if (results[2].status === 'fulfilled') {
       setMeteors(results[2].value);
     } else {
-      setNeoError(results[2].reason?.message || 'Failed to load NASA Near-Earth object data.');
+      setNeoError(getCleanErrorMessage(results[2].reason, 'Near-Earth Object feed is'));
     }
     setNeoLoading(false);
 
@@ -106,7 +107,7 @@ export default function TodayInSpaceScreen({ navigation }: Props) {
     if (results[3].status === 'fulfilled') {
       setNews(results[3].value);
     } else {
-      setNewsError(results[3].reason?.message || 'Failed to load space news feed.');
+      setNewsError(getCleanErrorMessage(results[3].reason, 'Space news is'));
     }
     setNewsLoading(false);
 

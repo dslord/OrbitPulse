@@ -15,6 +15,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useISSTelemetry } from '../hooks/useISSTelemetry';
 import { fetchSpaceNews } from '../services/spaceNewsService';
 import { RootStackParamList, SpaceNewsArticle } from '../types';
+import { getCleanErrorMessage } from '../utils/errorUtils';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Updates'>;
 
@@ -33,7 +34,8 @@ export default function UpdatesScreen({ navigation }: Props) {
       setArticles(data);
     } catch (err: any) {
       console.error('Failed to load space news:', err.message || err);
-      setNewsError(err.message || 'Unable to fetch current space news.');
+      const cleanMsg = getCleanErrorMessage(err, 'Space news is');
+      setNewsError(cleanMsg);
     } finally {
       setNewsLoading(false);
     }

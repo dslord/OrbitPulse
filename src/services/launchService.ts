@@ -1,6 +1,10 @@
 import { LaunchItem } from '../types';
+import { saveToCache, getFromCache, CachedResult } from './cacheService';
+import { getCleanErrorMessage } from '../utils/errorUtils';
 
 const LAUNCH_API_URL = 'https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=20';
+const LAUNCHES_CACHE_KEY = 'launches_upcoming';
+const MAX_LAUNCHES_CACHE_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 interface RawLaunchResult {
   id: string;
@@ -40,22 +44,47 @@ interface RawLaunchResponse {
   results?: RawLaunchResult[];
 }
 
+export interface LaunchesResult extends CachedResult<LaunchItem[]> {}
+
 /**
- * Fetches real upcoming launches from Launch Library 2 (The Space Devs API)
+ * Fetches real upcoming launches from Launch Library 2 with persistent cache fallback and sanitized error handling.
  */
-export async function fetchUpcomingLaunches(): Promise<LaunchItem[]> {
+export async function fetchUpcomingLaunchesWithMeta(): Promise<LaunchesResult> {
   try {
-    const response = await fetch(LAUNCH_API_URL);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    const response = await fetch(LAUNCH_API_URL, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
     if (!response.ok) {
-      throw new Error(`Launch API returned status HTTP ${response.status}`);
+      const cached = await getFromCache<LaunchItem[]>(LAUNCHES_CACHE_KEY);
+      if (cached && Array.isArray(cached.data) && cached.data.length > 0) {
+        return {
+          data: cached.data,
+          source: 'cache',
+          cachedAt: cached.cachedAt,
+          isStale: Date.now() - cached.cachedAt > MAX_LAUNCHES_CACHE_AGE_MS,
+        };
+      }
+      throw new Error(`Launch API error (HTTP ${response.status})`);
     }
 
     const data: RawLaunchResponse = await response.json();
     if (!data.results || !Array.isArray(data.results)) {
-      return [];
+      const cached = await getFromCache<LaunchItem[]>(LAUNCHES_CACHE_KEY);
+      if (cached && Array.isArray(cached.data) && cached.data.length > 0) {
+        return {
+          data: cached.data,
+          source: 'cache',
+          cachedAt: cached.cachedAt,
+          isStale: Date.now() - cached.cachedAt > MAX_LAUNCHES_CACHE_AGE_MS,
+        };
+      }
+      return { data: [], source: 'live', cachedAt: Date.now() };
     }
 
-    return data.results.map((item) => {
+    const launches: LaunchItem[] = data.results.map((item) => {
       const rocketName =
         item.rocket?.configuration?.full_name ||
         item.rocket?.configuration?.name ||
@@ -70,7 +99,6 @@ export async function fetchUpcomingLaunches(): Promise<LaunchItem[]> {
       const missionType = item.mission?.type || 'Space Flight';
       const imageUrl = item.image || null;
 
-      // Extract webcast URL if present in root vid_urls or mission vid_urls
       let webcastUrl: string | null = null;
       if (item.vid_urls && item.vid_urls.length > 0 && item.vid_urls[0].url) {
         webcastUrl = item.vid_urls[0].url;
@@ -94,9 +122,38 @@ export async function fetchUpcomingLaunches(): Promise<LaunchItem[]> {
         webcastUrl,
       };
     });
+
+    // Save to persistent cache
+    saveToCache(LAUNCHES_CACHE_KEY, launches);
+
+    return {
+      data: launches,
+      source: 'live',
+      cachedAt: Date.now(),
+      isStale: false,
+    };
   } catch (error: any) {
-    throw new Error(error.message || 'Failed to fetch live launch data');
+    // Attempt cache fallback
+    const cached = await getFromCache<LaunchItem[]>(LAUNCHES_CACHE_KEY);
+    if (cached && Array.isArray(cached.data) && cached.data.length > 0) {
+      return {
+        data: cached.data,
+        source: 'cache',
+        cachedAt: cached.cachedAt,
+        isStale: Date.now() - cached.cachedAt > MAX_LAUNCHES_CACHE_AGE_MS,
+      };
+    }
+    const cleanMsg = getCleanErrorMessage(error, 'Launch schedule is');
+    throw new Error(cleanMsg);
   }
+}
+
+/**
+ * Backward-compatible helper returning LaunchItem[] directly.
+ */
+export async function fetchUpcomingLaunches(): Promise<LaunchItem[]> {
+  const result = await fetchUpcomingLaunchesWithMeta();
+  return result.data;
 }
 
 /**
