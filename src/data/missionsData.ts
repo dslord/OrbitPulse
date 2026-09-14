@@ -20,7 +20,6 @@ export const MISSIONS_DATA: MissionItem[] = [
       'Measure physical and chemical properties of exoplanetary systems',
     ],
     websiteUrl: 'https://webb.nasa.gov',
-    imageUrl: 'https://images-assets.nasa.gov/image/PIA25656/PIA25656~orig.jpg',
   },
   {
     id: 'chandrayaan-3',

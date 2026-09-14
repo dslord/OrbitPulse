@@ -8,11 +8,13 @@ import {
   TouchableOpacity,
   TextInput,
   Linking,
+  Image,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { SPACE_AGENCIES, SpaceAgency } from '../data/spaceAgenciesData';
 import { useTheme } from '../context/ThemeContext';
+import { getAgencyIcon } from '../utils/agencyIcons';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SpaceAgencies'>;
 
@@ -91,6 +93,7 @@ export default function SpaceAgenciesScreen({ navigation }: Props) {
           ) : (
             filteredAgencies.map((agency: SpaceAgency) => {
               const isExpanded = expandedId === agency.id;
+              const iconSource = getAgencyIcon(agency.abbreviation || agency.name || agency.id);
 
               return (
                 <View key={agency.id} style={[styles.agencyCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
@@ -99,8 +102,12 @@ export default function SpaceAgenciesScreen({ navigation }: Props) {
                     onPress={() => toggleExpand(agency.id)}
                     style={styles.cardHeaderRow}
                   >
-                    <View style={[styles.avatarBadge, { backgroundColor: agency.badgeColor }]}>
-                      <Text style={styles.avatarText}>{agency.abbreviation}</Text>
+                    <View style={[styles.avatarBadge, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
+                      {iconSource ? (
+                        <Image source={iconSource} style={styles.avatarIcon} resizeMode="contain" />
+                      ) : (
+                        <Text style={styles.avatarText}>{agency.abbreviation}</Text>
+                      )}
                     </View>
 
                     <View style={styles.agencyHeaderContent}>
@@ -245,12 +252,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarBadge: {
-    width: 50,
-    height: 50,
+    width: 52,
+    height: 52,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14,
+    borderWidth: 1,
+    padding: 4,
+    overflow: 'hidden',
+  },
+  avatarIcon: {
+    width: 42,
+    height: 42,
   },
   avatarText: {
     color: '#ffffff',

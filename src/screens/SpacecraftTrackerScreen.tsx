@@ -7,6 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
+  Image,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
@@ -16,6 +17,7 @@ import {
 } from '../types';
 import { SPACECRAFT_DATA } from '../data/spacecraftData';
 import { useTheme } from '../context/ThemeContext';
+import { getAgencyIcon } from '../utils/agencyIcons';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SpacecraftTracker'>;
 
@@ -186,6 +188,8 @@ export default function SpacecraftTrackerScreen({ navigation }: Props) {
           ) : (
             filteredSpacecraft.map((sc: SpacecraftItem) => {
               const isLive = sc.hasLiveTracking;
+              const hasSpacecraftPhoto = Boolean(sc.imageUrl);
+              const agencyIcon = getAgencyIcon(sc.agencyAbbrev || sc.agency);
 
               return (
                 <TouchableOpacity
@@ -194,33 +198,45 @@ export default function SpacecraftTrackerScreen({ navigation }: Props) {
                   activeOpacity={0.8}
                   onPress={() => navigation.navigate('SpacecraftDetails', { spacecraft: sc })}
                 >
-                  <View style={styles.cardHeaderRow}>
-                    <View style={styles.badgeGroup}>
-                      <View style={[styles.agencyBadge, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
-                        <Text style={[styles.agencyBadgeText, { color: colors.primaryAccent }]}>{sc.agencyAbbrev}</Text>
+                  {hasSpacecraftPhoto ? (
+                    <View style={styles.cardImageArea}>
+                      <Image source={{ uri: sc.imageUrl }} style={styles.cardSpacecraftPhoto} resizeMode="cover" />
+                    </View>
+                  ) : agencyIcon ? (
+                    <View style={[styles.cardImageArea, styles.cardAgencyFallbackArea, { backgroundColor: colors.raisedSurface }]}>
+                      <Image source={agencyIcon} style={styles.cardFallbackAgencyIcon} resizeMode="contain" />
+                    </View>
+                  ) : null}
+
+                  <View style={styles.cardContentPadding}>
+                    <View style={styles.cardHeaderRow}>
+                      <View style={styles.badgeGroup}>
+                        <View style={[styles.agencyBadge, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
+                          <Text style={[styles.agencyBadgeText, { color: colors.primaryAccent }]}>{sc.agencyAbbrev}</Text>
+                        </View>
+                        <View style={[styles.regionBadge, { backgroundColor: colors.raisedSurface }]}>
+                          <Text style={[styles.regionBadgeText, { color: colors.textSecondary }]}>{sc.region}</Text>
+                        </View>
                       </View>
-                      <View style={[styles.regionBadge, { backgroundColor: colors.raisedSurface }]}>
-                        <Text style={[styles.regionBadgeText, { color: colors.textSecondary }]}>{sc.region}</Text>
+
+                      <View style={[styles.trackingPill, { borderColor: isLive ? colors.liveMuted : colors.surfaceBorder, backgroundColor: isLive ? colors.liveMuted : colors.raisedSurface }]}>
+                        <View style={[styles.statusDot, { backgroundColor: isLive ? colors.live : colors.primaryAccent }]} />
+                        <Text style={[styles.trackingText, { color: isLive ? colors.live : colors.primaryAccent }]}>
+                          {isLive ? 'LIVE TELEMETRY' : 'TRAJECTORY VIEW'}
+                        </Text>
                       </View>
                     </View>
 
-                    <View style={[styles.trackingPill, { borderColor: isLive ? colors.liveMuted : colors.surfaceBorder, backgroundColor: isLive ? colors.liveMuted : colors.raisedSurface }]}>
-                      <View style={[styles.statusDot, { backgroundColor: isLive ? colors.live : colors.primaryAccent }]} />
-                      <Text style={[styles.trackingText, { color: isLive ? colors.live : colors.primaryAccent }]}>
-                        {isLive ? 'LIVE TELEMETRY' : 'TRAJECTORY VIEW'}
-                      </Text>
+                    <Text style={[styles.spacecraftName, { color: colors.textPrimary }]}>{sc.name}</Text>
+                    <Text style={[styles.missionText, { color: colors.primaryAccent }]}>{sc.mission}</Text>
+                    <Text style={[styles.destinationText, { color: colors.textMuted }]} numberOfLines={1}>
+                      Target: {sc.destination}
+                    </Text>
+
+                    <View style={[styles.cardFooter, { borderTopColor: colors.surfaceBorder }]}>
+                      <Text style={[styles.launchDateText, { color: colors.textMuted }]}>Launched: {sc.launchDate}</Text>
+                      <Text style={[styles.detailsLink, { color: colors.primaryAccent }]}>Track Spacecraft &rarr;</Text>
                     </View>
-                  </View>
-
-                  <Text style={[styles.spacecraftName, { color: colors.textPrimary }]}>{sc.name}</Text>
-                  <Text style={[styles.missionText, { color: colors.primaryAccent }]}>{sc.mission}</Text>
-                  <Text style={[styles.destinationText, { color: colors.textMuted }]} numberOfLines={1}>
-                    Target: {sc.destination}
-                  </Text>
-
-                  <View style={[styles.cardFooter, { borderTopColor: colors.surfaceBorder }]}>
-                    <Text style={[styles.launchDateText, { color: colors.textMuted }]}>Launched: {sc.launchDate}</Text>
-                    <Text style={[styles.detailsLink, { color: colors.primaryAccent }]}>Track Spacecraft &rarr;</Text>
                   </View>
                 </TouchableOpacity>
               );
@@ -324,9 +340,30 @@ const styles = StyleSheet.create({
   },
   cardContainer: {
     borderRadius: 16,
-    padding: 16,
     marginBottom: 14,
     borderWidth: 1,
+    overflow: 'hidden',
+  },
+  cardImageArea: {
+    width: '100%',
+    height: 130,
+    overflow: 'hidden',
+  },
+  cardSpacecraftPhoto: {
+    width: '100%',
+    height: '100%',
+  },
+  cardAgencyFallbackArea: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 12,
+  },
+  cardFallbackAgencyIcon: {
+    width: 130,
+    height: 75,
+  },
+  cardContentPadding: {
+    padding: 16,
   },
   cardHeaderRow: {
     flexDirection: 'row',

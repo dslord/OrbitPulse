@@ -21,7 +21,6 @@ export const SPACECRAFT_DATA: SpacecraftItem[] = [
       'Test deep-space life support, operational procedures, and crew health technologies',
     ],
     websiteUrl: 'https://www.nasa.gov/international-space-station',
-    imageUrl: 'https://images-assets.nasa.gov/image/PIA25656/PIA25656~orig.jpg',
     hasLiveTracking: true,
   },
   {

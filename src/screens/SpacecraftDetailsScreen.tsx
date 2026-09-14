@@ -19,12 +19,14 @@ import {
 } from '../services/satelliteService';
 import { SatelliteGPData } from '../types';
 import { useTheme } from '../context/ThemeContext';
+import { getAgencyIcon } from '../utils/agencyIcons';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SpacecraftDetails'>;
 
 export default function SpacecraftDetailsScreen({ route }: Props) {
   const { colors, activeTheme } = useTheme();
   const { spacecraft } = route.params;
+  const agencyIcon = getAgencyIcon(spacecraft.agencyAbbrev || spacecraft.agency);
 
   const [gpData, setGpData] = useState<SatelliteGPData | null>(null);
   const [loading, setLoading] = useState<boolean>(spacecraft.hasLiveTracking);
@@ -94,7 +96,7 @@ export default function SpacecraftDetailsScreen({ route }: Props) {
         >
           {/* HERO BANNER OR IMAGE */}
           {spacecraft.imageUrl && !imageError ? (
-            <View style={styles.heroImageContainer}>
+            <View style={[styles.heroImageContainer, { borderColor: colors.surfaceBorder }]}>
               <Image
                 source={{ uri: spacecraft.imageUrl }}
                 style={styles.heroImage}
@@ -103,10 +105,14 @@ export default function SpacecraftDetailsScreen({ route }: Props) {
               />
               <View style={styles.heroOverlay} />
             </View>
+          ) : agencyIcon ? (
+            <View style={[styles.heroImageContainer, styles.heroAgencyIconContainer, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
+              <Image source={agencyIcon} style={styles.heroAgencyIcon} resizeMode="contain" />
+            </View>
           ) : (
-            <View style={styles.heroFallbackBanner}>
-              <Text style={styles.heroFallbackText}>{spacecraft.agencyAbbrev}</Text>
-              <Text style={styles.heroFallbackSubtext}>{spacecraft.region}</Text>
+            <View style={[styles.heroFallbackBanner, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+              <Text style={[styles.heroFallbackText, { color: colors.primaryAccent }]}>{spacecraft.agencyAbbrev}</Text>
+              <Text style={[styles.heroFallbackSubtext, { color: colors.textMuted }]}>{spacecraft.region}</Text>
             </View>
           )}
 
@@ -355,7 +361,17 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.2)',
+    borderColor: 'rgba(91, 156, 255, 0.2)',
+  },
+  heroAgencyIconContainer: {
+    height: 160,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  heroAgencyIcon: {
+    width: 180,
+    height: 100,
   },
   heroImage: {
     width: '100%',

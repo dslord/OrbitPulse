@@ -7,11 +7,13 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
+  Image,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, MissionItem, MissionStatus } from '../types';
 import { MISSIONS_DATA } from '../data/missionsData';
 import { useTheme } from '../context/ThemeContext';
+import { getAgencyIcon } from '../utils/agencyIcons';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionExplorer'>;
 
@@ -181,6 +183,8 @@ export default function MissionExplorerScreen({ navigation }: Props) {
           ) : (
             filteredMissions.map((mission: MissionItem) => {
               const statusColor = getStatusColor(mission.status);
+              const hasMissionPhoto = Boolean(mission.imageUrl);
+              const agencyIcon = getAgencyIcon(mission.agencyAbbrev || mission.agency);
 
               return (
                 <TouchableOpacity
@@ -189,37 +193,49 @@ export default function MissionExplorerScreen({ navigation }: Props) {
                   activeOpacity={0.8}
                   onPress={() => navigation.navigate('MissionDetails', { mission })}
                 >
-                  <View style={styles.cardHeaderRow}>
-                    <View style={styles.badgeRow}>
-                      <View style={[styles.agencyBadge, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
-                        <Text style={[styles.agencyBadgeText, { color: colors.primaryAccent }]}>{mission.agencyAbbrev}</Text>
+                  {hasMissionPhoto ? (
+                    <View style={styles.cardImageArea}>
+                      <Image source={{ uri: mission.imageUrl }} style={styles.cardMissionPhoto} resizeMode="cover" />
+                    </View>
+                  ) : agencyIcon ? (
+                    <View style={[styles.cardImageArea, styles.cardAgencyFallbackArea, { backgroundColor: colors.raisedSurface }]}>
+                      <Image source={agencyIcon} style={styles.cardFallbackAgencyIcon} resizeMode="contain" />
+                    </View>
+                  ) : null}
+
+                  <View style={styles.cardContentPadding}>
+                    <View style={styles.cardHeaderRow}>
+                      <View style={styles.badgeRow}>
+                        <View style={[styles.agencyBadge, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
+                          <Text style={[styles.agencyBadgeText, { color: colors.primaryAccent }]}>{mission.agencyAbbrev}</Text>
+                        </View>
+                        <View style={[styles.targetBadge, { backgroundColor: colors.raisedSurface }]}>
+                          <Text style={[styles.targetBadgeText, { color: colors.textSecondary }]} numberOfLines={1}>
+                            {mission.target}
+                          </Text>
+                        </View>
                       </View>
-                      <View style={[styles.targetBadge, { backgroundColor: colors.raisedSurface }]}>
-                        <Text style={[styles.targetBadgeText, { color: colors.textSecondary }]} numberOfLines={1}>
-                          {mission.target}
+
+                      <View style={[styles.statusPill, { borderColor: statusColor }]}>
+                        <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+                        <Text style={[styles.statusText, { color: statusColor }]}>
+                          {mission.status}
                         </Text>
                       </View>
                     </View>
 
-                    <View style={[styles.statusPill, { borderColor: statusColor }]}>
-                      <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
-                      <Text style={[styles.statusText, { color: statusColor }]}>
-                        {mission.status}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <Text style={[styles.missionName, { color: colors.textPrimary }]}>{mission.name}</Text>
-                  <Text style={[styles.categoryText, { color: colors.primaryAccent }]}>{mission.category}</Text>
-                  <Text style={[styles.descriptionSnippet, { color: colors.textSecondary }]} numberOfLines={2}>
-                    {mission.description}
-                  </Text>
-
-                  <View style={[styles.cardFooter, { borderTopColor: colors.surfaceBorder }]}>
-                    <Text style={[styles.agencyFullName, { color: colors.textMuted }]} numberOfLines={1}>
-                      {mission.agency}
+                    <Text style={[styles.missionName, { color: colors.textPrimary }]}>{mission.name}</Text>
+                    <Text style={[styles.categoryText, { color: colors.primaryAccent }]}>{mission.category}</Text>
+                    <Text style={[styles.descriptionSnippet, { color: colors.textSecondary }]} numberOfLines={2}>
+                      {mission.description}
                     </Text>
-                    <Text style={[styles.detailsActionText, { color: colors.primaryAccent }]}>View Details &rarr;</Text>
+
+                    <View style={[styles.cardFooter, { borderTopColor: colors.surfaceBorder }]}>
+                      <Text style={[styles.agencyFullName, { color: colors.textMuted }]} numberOfLines={1}>
+                        {mission.agency}
+                      </Text>
+                      <Text style={[styles.detailsActionText, { color: colors.primaryAccent }]}>View Details &rarr;</Text>
+                    </View>
                   </View>
                 </TouchableOpacity>
               );
@@ -350,10 +366,31 @@ const styles = StyleSheet.create({
   missionCard: {
     backgroundColor: '#161936',
     borderRadius: 18,
-    padding: 16,
     marginBottom: 14,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
+    overflow: 'hidden',
+  },
+  cardImageArea: {
+    width: '100%',
+    height: 130,
+    overflow: 'hidden',
+  },
+  cardMissionPhoto: {
+    width: '100%',
+    height: '100%',
+  },
+  cardAgencyFallbackArea: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 12,
+  },
+  cardFallbackAgencyIcon: {
+    width: 130,
+    height: 75,
+  },
+  cardContentPadding: {
+    padding: 16,
   },
   cardHeaderRow: {
     flexDirection: 'row',

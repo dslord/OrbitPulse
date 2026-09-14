@@ -12,6 +12,7 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { useTheme } from '../context/ThemeContext';
+import { getAgencyIcon } from '../utils/agencyIcons';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionDetails'>;
 
@@ -19,6 +20,7 @@ export default function MissionDetailsScreen({ route }: Props) {
   const { colors, activeTheme } = useTheme();
   const { mission } = route.params;
   const [imageError, setImageError] = useState<boolean>(false);
+  const agencyIcon = getAgencyIcon(mission.agencyAbbrev || mission.agency);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -62,6 +64,10 @@ export default function MissionDetailsScreen({ route }: Props) {
                 onError={() => setImageError(true)}
               />
               <View style={styles.heroOverlay} />
+            </View>
+          ) : agencyIcon ? (
+            <View style={[styles.heroImageContainer, styles.heroAgencyIconContainer, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
+              <Image source={agencyIcon} style={styles.heroAgencyIcon} resizeMode="contain" />
             </View>
           ) : (
             <View style={[styles.heroFallbackBanner, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
@@ -180,7 +186,16 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.2)',
+    borderColor: 'rgba(91, 156, 255, 0.2)',
+  },
+  heroAgencyIconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  heroAgencyIcon: {
+    width: 180,
+    height: 100,
   },
   heroImage: {
     width: '100%',
