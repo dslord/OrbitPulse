@@ -321,11 +321,11 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   cardBody: {
-    backgroundColor: 'rgba(11, 13, 27, 0.85)',
+    backgroundColor: 'rgba(18, 22, 44, 0.92)',
     borderRadius: 14,
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(0, 212, 255, 0.2)',
   },
   meteorTitle: {
     fontSize: 18,

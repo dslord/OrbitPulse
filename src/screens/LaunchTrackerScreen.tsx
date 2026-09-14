@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   launchCard: {
-    backgroundColor: '#161936',
+    backgroundColor: 'rgba(18, 22, 44, 0.92)',
     borderRadius: 16,
     padding: 16,
     marginBottom: 14,
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 212, 255, 0.2)',
     shadowColor: '#00d4ff',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.12,
     shadowRadius: 6,
     elevation: 4,
   },
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 212, 255, 0.12)',
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: 'rgba(0, 212, 255, 0.3)',
     maxWidth: '70%',
@@ -381,13 +381,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   statusBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 10,
+    borderRadius: 8,
   },
   statusBadgeLive: {
-    backgroundColor: 'rgba(34, 197, 94, 0.2)',
+    backgroundColor: 'rgba(34, 197, 94, 0.18)',
   },
   statusText: {
     color: '#94a3b8',
@@ -398,13 +398,13 @@ const styles = StyleSheet.create({
     color: '#22c55e',
   },
   launchName: {
-    color: '#ffffff',
+    color: '#f8fafc',
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 12,
   },
   countdownRow: {
-    backgroundColor: '#0b0d1b',
+    backgroundColor: 'rgba(11, 13, 27, 0.85)',
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.15)',
+    borderColor: 'rgba(0, 212, 255, 0.2)',
   },
   countdownLabel: {
     color: '#94a3b8',
