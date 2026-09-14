@@ -12,11 +12,12 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
-  fetchUpcomingLaunches,
+  fetchUpcomingLaunchesWithMeta,
   calculateLaunchCountdown,
 } from '../services/launchService';
 import { LaunchItem, RootStackParamList } from '../types';
 import { getCleanErrorMessage } from '../utils/errorUtils';
+import { formatFreshnessLabel } from '../utils/timeUtils';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'LaunchTracker'>;
 
@@ -30,6 +31,9 @@ const FILTERS: { id: FilterCategory; label: string }[] = [
 
 export default function LaunchTrackerScreen({ navigation }: Props) {
   const [launches, setLaunches] = useState<LaunchItem[]>([]);
+  const [source, setSource] = useState<'live' | 'cache'>('live');
+  const [cachedAt, setCachedAt] = useState<number | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,10 +51,14 @@ export default function LaunchTrackerScreen({ navigation }: Props) {
   const loadData = useCallback(async () => {
     try {
       setError(null);
-      const data = await fetchUpcomingLaunches();
-      setLaunches(data);
+      const res = await fetchUpcomingLaunchesWithMeta();
+      setLaunches(res.data);
+      setSource(res.source);
+      setCachedAt(res.cachedAt || null);
+      setLastUpdated(Date.now());
+
       // Background prefetch launch images for instant display when tapped
-      data.forEach((item) => {
+      res.data.forEach((item) => {
         if (item.imageUrl) {
           Image.prefetch(item.imageUrl).catch(() => {});
         }
@@ -200,6 +208,14 @@ export default function LaunchTrackerScreen({ navigation }: Props) {
             );
           })}
         </View>
+
+        {!loading && !error && (
+          <View style={styles.freshnessContainer}>
+            <Text style={styles.freshnessText}>
+              {formatFreshnessLabel({ source, cachedAt, lastUpdated, prefix: 'Manifest' })}
+            </Text>
+          </View>
+        )}
 
         {/* Loading View */}
         {loading && (
@@ -455,5 +471,16 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
     fontSize: 13,
     textAlign: 'center',
+  },
+  freshnessContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 4,
+    alignItems: 'center',
+  },
+  freshnessText: {
+    color: '#94a3b8',
+    fontSize: 11,
+    fontWeight: '600',
   },
 });

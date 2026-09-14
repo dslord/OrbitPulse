@@ -7,6 +7,9 @@ interface UseISSTelemetryReturn {
   loading: boolean;
   error: string | null;
   isCached: boolean;
+  source: 'live' | 'cache';
+  cachedAt: number | null;
+  lastUpdated: number | null;
   refetch: () => Promise<void>;
 }
 
@@ -15,13 +18,19 @@ export function useISSTelemetry(pollingIntervalMs: number = 7000): UseISSTelemet
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isCached, setIsCached] = useState<boolean>(false);
+  const [source, setSource] = useState<'live' | 'cache'>('live');
+  const [cachedAt, setCachedAt] = useState<number | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<number | null>(null);
 
   const getTelemetry = useCallback(async () => {
     try {
       setError(null);
       const res = await fetchISSTelemetryWithMeta();
       setTelemetry(res.data);
+      setSource(res.source);
       setIsCached(res.source === 'cache');
+      setCachedAt(res.cachedAt || null);
+      setLastUpdated(Date.now());
       setLoading(false);
     } catch (err: any) {
       console.error('Error in useISSTelemetry:', err.message);
@@ -49,6 +58,9 @@ export function useISSTelemetry(pollingIntervalMs: number = 7000): UseISSTelemet
     loading,
     error,
     isCached,
+    source,
+    cachedAt,
+    lastUpdated,
     refetch: getTelemetry,
   };
 }

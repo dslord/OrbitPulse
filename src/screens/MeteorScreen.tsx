@@ -12,27 +12,32 @@ import {
   ListRenderItemInfo,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { fetchMeteorFeed } from '../services/nasaNeoService';
+import { fetchMeteorFeedWithMeta } from '../services/nasaNeoService';
 import { MeteorObject, RootStackParamList } from '../types';
 import { getCleanErrorMessage } from '../utils/errorUtils';
+import { formatFreshnessLabel } from '../utils/timeUtils';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Meteor'>;
 
 export default function MeteorScreen({ navigation }: Props) {
   const [meteors, setMeteors] = useState<MeteorObject[]>([]);
+  const [source, setSource] = useState<'live' | 'cache'>('live');
+  const [cachedAt, setCachedAt] = useState<number | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   const getMeteors = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const data = await fetchMeteorFeed();
-      setMeteors(data);
-      setLastUpdated(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      const res = await fetchMeteorFeedWithMeta();
+      setMeteors(res.data);
+      setSource(res.source);
+      setCachedAt(res.cachedAt || null);
+      setLastUpdated(Date.now());
       setLoading(false);
     } catch (err: any) {
       console.error('Error fetching NASA NEO meteors:', err.message);
@@ -181,8 +186,7 @@ export default function MeteorScreen({ navigation }: Props) {
         <View style={styles.titleContainer}>
           <Text style={styles.screenTitle}>Near-Earth Object Radar</Text>
           <Text style={styles.screenSubtitle}>
-            Live NASA NEO Threat Analysis
-            {lastUpdated ? ` • Updated ${lastUpdated}` : ''}
+            NASA NEO Threat Analysis • {formatFreshnessLabel({ source, cachedAt, lastUpdated, prefix: 'Updated' })}
           </Text>
         </View>
 

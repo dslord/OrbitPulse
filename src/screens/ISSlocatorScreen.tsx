@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import { useISSTelemetry } from '../hooks/useISSTelemetry';
+import { formatFreshnessLabel } from '../utils/timeUtils';
 import {
   fetchISSGPData,
   calculateOrbitalVisualization,
@@ -17,7 +18,7 @@ import {
 import { SatelliteGPData } from '../types';
 
 export default function ISSlocatorScreen() {
-  const { telemetry: location, loading, error, isCached, refetch } = useISSTelemetry(7000);
+  const { telemetry: location, loading, error, isCached, cachedAt, refetch } = useISSTelemetry(7000);
   const [issGpData, setIssGpData] = useState<SatelliteGPData | null>(null);
 
   // Fetch real ISS orbital GP parameters once on mount (failure-safe)
@@ -157,7 +158,11 @@ export default function ISSlocatorScreen() {
 
         {/* Telemetry Card (WhereTheISS Live Telemetry) */}
         <View style={styles.telemetryCard}>
-          <Text style={styles.telemetryTitle}>Live Telemetry</Text>
+          <Text style={styles.telemetryTitle}>
+            {isCached
+              ? formatFreshnessLabel({ source: 'cache', cachedAt, prefix: 'Cached telemetry •' })
+              : 'Live Telemetry'}
+          </Text>
 
           <View style={styles.telemetryGrid}>
             <View style={styles.telemetryItem}>

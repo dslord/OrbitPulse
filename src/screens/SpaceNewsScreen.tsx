@@ -15,12 +15,16 @@ import {
 import { fetchSpaceNewsWithMeta } from '../services/spaceNewsService';
 import { SpaceNewsArticle } from '../types';
 import { getCleanErrorMessage } from '../utils/errorUtils';
+import { formatRelativeTime, formatFreshnessLabel } from '../utils/timeUtils';
 
 export default function SpaceNewsScreen() {
   const [articles, setArticles] = useState<SpaceNewsArticle[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isCached, setIsCached] = useState<boolean>(false);
+  const [source, setSource] = useState<'live' | 'cache'>('live');
+  const [cachedAt, setCachedAt] = useState<number | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'isro'>('all');
 
@@ -31,7 +35,10 @@ export default function SpaceNewsScreen() {
       const searchTerm = filter === 'isro' ? 'ISRO' : undefined;
       const res = await fetchSpaceNewsWithMeta(20, searchTerm);
       setArticles(res.data);
+      setSource(res.source);
       setIsCached(res.source === 'cache');
+      setCachedAt(res.cachedAt || null);
+      setLastUpdated(Date.now());
     } catch (err: any) {
       console.error('Failed to load space news feed:', err.message || err);
       const cleanMsg = getCleanErrorMessage(err, 'Space news is');

@@ -13,14 +13,22 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useISSTelemetry } from '../hooks/useISSTelemetry';
-import { fetchSpaceNews } from '../services/spaceNewsService';
+import { fetchSpaceNewsWithMeta } from '../services/spaceNewsService';
 import { RootStackParamList, SpaceNewsArticle } from '../types';
 import { getCleanErrorMessage } from '../utils/errorUtils';
+import { formatFreshnessLabel } from '../utils/timeUtils';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Updates'>;
 
 export default function UpdatesScreen({ navigation }: Props) {
-  const { telemetry, loading: telemetryLoading, error: telemetryError, refetch: refetchTelemetry } = useISSTelemetry(5000);
+  const {
+    telemetry,
+    loading: telemetryLoading,
+    error: telemetryError,
+    isCached: telemetryCached,
+    cachedAt: telemetryCachedAt,
+    refetch: refetchTelemetry,
+  } = useISSTelemetry(5000);
   const [articles, setArticles] = useState<SpaceNewsArticle[]>([]);
   const [newsLoading, setNewsLoading] = useState<boolean>(true);
   const [newsError, setNewsError] = useState<string | null>(null);
@@ -30,8 +38,8 @@ export default function UpdatesScreen({ navigation }: Props) {
     setNewsLoading(true);
     setNewsError(null);
     try {
-      const data = await fetchSpaceNews(6);
-      setArticles(data);
+      const res = await fetchSpaceNewsWithMeta(6);
+      setArticles(res.data);
     } catch (err: any) {
       console.error('Failed to load space news:', err.message || err);
       const cleanMsg = getCleanErrorMessage(err, 'Space news is');
@@ -116,9 +124,13 @@ export default function UpdatesScreen({ navigation }: Props) {
           <View style={styles.card}>
             <View style={styles.cardHeaderRow}>
               <Text style={styles.cardSectionTitle}>Live Orbital Telemetry</Text>
-              <View style={styles.liveIndicator}>
-                <View style={styles.liveDot} />
-                <Text style={styles.liveText}>LIVE</Text>
+              <View style={[styles.liveIndicator, telemetryCached && styles.cacheIndicator]}>
+                {!telemetryCached && <View style={styles.liveDot} />}
+                <Text style={[styles.liveText, telemetryCached && styles.cacheText]}>
+                  {telemetryCached
+                    ? formatFreshnessLabel({ source: 'cache', cachedAt: telemetryCachedAt, prefix: 'Cached' })
+                    : 'LIVE'}
+                </Text>
               </View>
             </View>
 
@@ -302,6 +314,9 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 10,
   },
+  cacheIndicator: {
+    backgroundColor: 'rgba(234, 179, 8, 0.2)',
+  },
   liveDot: {
     width: 6,
     height: 6,
@@ -313,6 +328,9 @@ const styles = StyleSheet.create({
     color: '#ef4444',
     fontSize: 10,
     fontWeight: 'bold',
+  },
+  cacheText: {
+    color: '#eab308',
   },
   telemetryGrid: {
     flexDirection: 'row',

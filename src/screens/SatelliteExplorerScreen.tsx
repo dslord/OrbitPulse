@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import { useSatelliteExplorer } from '../hooks/useSatelliteExplorer';
+import { formatFreshnessLabel } from '../utils/timeUtils';
 import {
   calculateOrbitalVisualization,
 } from '../services/satelliteService';
@@ -37,6 +38,8 @@ export default function SatelliteExplorerScreen() {
     filteredSatellites,
     loading,
     error,
+    source,
+    cachedAt,
     lastUpdated,
     refetch,
   } = useSatelliteExplorer('visual');
@@ -240,7 +243,9 @@ export default function SatelliteExplorerScreen() {
                       NORAD #{orbitalState.noradId} | {orbitalState.designator}
                     </Text>
                   </View>
-                  {lastUpdated && <Text style={styles.liveBadge}>● LIVE</Text>}
+                  <Text style={[styles.liveBadge, source === 'cache' && styles.cacheBadge]}>
+                    {formatFreshnessLabel({ source, cachedAt, lastUpdated, prefix: 'GP Data' })}
+                  </Text>
                 </View>
 
                 <View style={styles.telemetryGrid}>
@@ -548,6 +553,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 10,
+  },
+  cacheBadge: {
+    color: '#eab308',
+    backgroundColor: 'rgba(234, 179, 8, 0.15)',
   },
   telemetryGrid: {
     flexDirection: 'row',

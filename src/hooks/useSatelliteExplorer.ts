@@ -14,6 +14,7 @@ interface UseSatelliteExplorerReturn {
   allSatellitesCount: number;
   loading: boolean;
   error: string | null;
+  source: 'live' | 'cache';
   isCached: boolean;
   cachedAt: number | null;
   lastUpdated: number | null;
@@ -30,6 +31,7 @@ export function useSatelliteExplorer(
   const [selectedSatId, setSelectedSatId] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [source, setSource] = useState<'live' | 'cache'>('live');
   const [isCached, setIsCached] = useState<boolean>(false);
   const [cachedAt, setCachedAt] = useState<number | null>(null);
   const [lastUpdated, setLastUpdated] = useState<number | null>(null);
@@ -42,6 +44,7 @@ export function useSatelliteExplorer(
       const res = await fetchSatellitesWithMeta(cat);
       const gpList = res.data;
       setRawGpList(gpList);
+      setSource(res.source);
       setIsCached(res.source === 'cache');
       setCachedAt(res.cachedAt || null);
 
@@ -143,6 +146,7 @@ export function useSatelliteExplorer(
     allSatellitesCount: satellites.length,
     loading,
     error,
+    source,
     isCached,
     cachedAt,
     lastUpdated,
