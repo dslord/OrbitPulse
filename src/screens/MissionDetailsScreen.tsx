@@ -11,10 +11,12 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
+import { useTheme } from '../context/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionDetails'>;
 
 export default function MissionDetailsScreen({ route }: Props) {
+  const { colors, activeTheme } = useTheme();
   const { mission } = route.params;
   const [imageError, setImageError] = useState<boolean>(false);
 
@@ -52,7 +54,7 @@ export default function MissionDetailsScreen({ route }: Props) {
         >
           {/* HERO IMAGE OR BANNER FALLBACK */}
           {mission.imageUrl && !imageError ? (
-            <View style={styles.heroImageContainer}>
+            <View style={[styles.heroImageContainer, { borderColor: colors.surfaceBorder }]}>
               <Image
                 source={{ uri: mission.imageUrl }}
                 style={styles.heroImage}
@@ -62,17 +64,17 @@ export default function MissionDetailsScreen({ route }: Props) {
               <View style={styles.heroOverlay} />
             </View>
           ) : (
-            <View style={styles.heroFallbackBanner}>
-              <Text style={styles.heroFallbackText}>{mission.agencyAbbrev}</Text>
-              <Text style={styles.heroFallbackSubtext}>{mission.category}</Text>
+            <View style={[styles.heroFallbackBanner, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+              <Text style={[styles.heroFallbackText, { color: colors.primaryAccent }]}>{mission.agencyAbbrev}</Text>
+              <Text style={[styles.heroFallbackSubtext, { color: colors.textMuted }]}>{mission.category}</Text>
             </View>
           )}
 
           {/* MAIN HEADER */}
-          <View style={styles.headerCard}>
+          <View style={[styles.headerCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
             <View style={styles.headerTopRow}>
-              <View style={styles.agencyBadge}>
-                <Text style={styles.agencyBadgeText}>{mission.agencyAbbrev}</Text>
+              <View style={[styles.agencyBadge, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
+                <Text style={[styles.agencyBadgeText, { color: colors.primaryAccent }]}>{mission.agencyAbbrev}</Text>
               </View>
 
               <View style={[styles.statusPill, { borderColor: statusColor }]}>
@@ -83,39 +85,39 @@ export default function MissionDetailsScreen({ route }: Props) {
               </View>
             </View>
 
-            <Text style={styles.titleText}>{mission.name}</Text>
-            <Text style={styles.agencyFullName}>{mission.agency}</Text>
+            <Text style={[styles.titleText, { color: colors.textPrimary }]}>{mission.name}</Text>
+            <Text style={[styles.agencyFullName, { color: colors.textMuted }]}>{mission.agency}</Text>
           </View>
 
           {/* METRICS GRID */}
-          <View style={styles.sectionCard}>
-            <Text style={styles.sectionTitle}>MISSION SPECIFICATIONS</Text>
+          <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+            <Text style={[styles.sectionTitle, { color: colors.primaryAccent }]}>MISSION SPECIFICATIONS</Text>
 
             <View style={styles.gridRow}>
               <View style={styles.gridItem}>
-                <Text style={styles.gridLabel}>Destination / Target</Text>
-                <Text style={styles.gridValue}>{mission.target}</Text>
+                <Text style={[styles.gridLabel, { color: colors.textMuted }]}>Destination / Target</Text>
+                <Text style={[styles.gridValue, { color: colors.textPrimary }]}>{mission.target}</Text>
               </View>
               <View style={styles.gridItem}>
-                <Text style={styles.gridLabel}>Category</Text>
-                <Text style={styles.gridValue}>{mission.category}</Text>
+                <Text style={[styles.gridLabel, { color: colors.textMuted }]}>Category</Text>
+                <Text style={[styles.gridValue, { color: colors.textPrimary }]}>{mission.category}</Text>
               </View>
             </View>
 
             {(mission.launchDate || mission.duration) && (
               <>
-                <View style={styles.divider} />
+                <View style={[styles.divider, { backgroundColor: colors.surfaceBorder }]} />
                 <View style={styles.gridRow}>
                   {mission.launchDate && (
                     <View style={styles.gridItem}>
-                      <Text style={styles.gridLabel}>Launch Date</Text>
-                      <Text style={styles.gridValue}>{mission.launchDate}</Text>
+                      <Text style={[styles.gridLabel, { color: colors.textMuted }]}>Launch Date</Text>
+                      <Text style={[styles.gridValue, { color: colors.textPrimary }]}>{mission.launchDate}</Text>
                     </View>
                   )}
                   {mission.duration && (
                     <View style={styles.gridItem}>
-                      <Text style={styles.gridLabel}>Mission Duration</Text>
-                      <Text style={styles.gridValue}>{mission.duration}</Text>
+                      <Text style={[styles.gridLabel, { color: colors.textMuted }]}>Mission Duration</Text>
+                      <Text style={[styles.gridValue, { color: colors.textPrimary }]}>{mission.duration}</Text>
                     </View>
                   )}
                 </View>
@@ -124,19 +126,19 @@ export default function MissionDetailsScreen({ route }: Props) {
           </View>
 
           {/* OVERVIEW / DESCRIPTION */}
-          <View style={styles.sectionCard}>
-            <Text style={styles.sectionTitle}>MISSION OVERVIEW</Text>
-            <Text style={styles.descriptionText}>{mission.description}</Text>
+          <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+            <Text style={[styles.sectionTitle, { color: colors.primaryAccent }]}>MISSION OVERVIEW</Text>
+            <Text style={[styles.descriptionText, { color: colors.textSecondary }]}>{mission.description}</Text>
           </View>
 
           {/* OBJECTIVES */}
           {mission.objectives && mission.objectives.length > 0 && (
-            <View style={styles.sectionCard}>
-              <Text style={styles.sectionTitle}>KEY OBJECTIVES</Text>
+            <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+              <Text style={[styles.sectionTitle, { color: colors.primaryAccent }]}>KEY OBJECTIVES</Text>
               {mission.objectives.map((obj, index) => (
                 <View key={index} style={styles.objectiveRow}>
-                  <Text style={styles.objectiveBullet}>•</Text>
-                  <Text style={styles.objectiveText}>{obj}</Text>
+                  <Text style={[styles.objectiveBullet, { color: colors.primaryAccent }]}>•</Text>
+                  <Text style={[styles.objectiveText, { color: colors.textSecondary }]}>{obj}</Text>
                 </View>
               ))}
             </View>
@@ -145,11 +147,11 @@ export default function MissionDetailsScreen({ route }: Props) {
           {/* OFFICIAL WEBSITE LINK BUTTON */}
           {mission.websiteUrl && (
             <TouchableOpacity
-              style={styles.websiteButton}
+              style={[styles.websiteButton, { backgroundColor: colors.surface, borderColor: colors.primaryAccent }]}
               activeOpacity={0.8}
               onPress={handleOpenWebsite}
             >
-              <Text style={styles.websiteButtonText}>Visit Official Mission Website &rarr;</Text>
+              <Text style={[styles.websiteButtonText, { color: colors.primaryAccent }]}>Visit Official Mission Website &rarr;</Text>
             </TouchableOpacity>
           )}
         </ScrollView>
@@ -200,10 +202,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.2)',
+    borderColor: 'rgba(91, 156, 255, 0.2)',
   },
   heroFallbackText: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 22,
     fontWeight: '900',
     letterSpacing: 2,
@@ -229,15 +231,15 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   agencyBadge: {
-    backgroundColor: 'rgba(0, 212, 255, 0.15)',
+    backgroundColor: 'rgba(91, 156, 255, 0.15)',
     borderRadius: 8,
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.3)',
+    borderColor: 'rgba(91, 156, 255, 0.3)',
   },
   agencyBadgeText: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 11,
     fontWeight: 'bold',
   },
@@ -280,7 +282,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   sectionTitle: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 12,
     fontWeight: 'bold',
     letterSpacing: 1,
@@ -321,7 +323,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   objectiveBullet: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 14,
     fontWeight: 'bold',
     marginRight: 8,
@@ -339,11 +341,11 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#00d4ff',
+    borderColor: '#5B9CFF',
     marginTop: 4,
   },
   websiteButtonText: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 13,
     fontWeight: 'bold',
   },

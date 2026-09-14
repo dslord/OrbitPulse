@@ -11,23 +11,25 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MeteorObject, RootStackParamList } from '../types';
+import { useTheme } from '../context/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AsteroidDetails'>;
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function AsteroidDetailsScreen({ route, navigation }: Props) {
+  const { colors, activeTheme } = useTheme();
   const asteroid = route.params?.asteroid;
 
   if (!asteroid) {
     return (
       <View style={styles.container}>
         <ImageBackground source={require('../../assets/meteor_bg.jpg')} style={styles.background}>
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorTitle}>Asteroid Data Unavailable</Text>
-            <Text style={styles.errorSub}>The requested near-earth object parameters could not be loaded.</Text>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-              <Text style={styles.backButtonText}>Back to Radar Feed</Text>
+          <View style={[styles.errorContainer, { backgroundColor: colors.overlay }]}>
+            <Text style={[styles.errorTitle, { color: colors.critical }]}>Asteroid Data Unavailable</Text>
+            <Text style={[styles.errorSub, { color: colors.textSecondary }]}>The requested near-earth object parameters could not be loaded.</Text>
+            <TouchableOpacity style={[styles.backButton, { backgroundColor: colors.primaryAccent }]} onPress={() => navigation.goBack()}>
+              <Text style={[styles.backButtonText, { color: colors.background }]}>Back to Radar Feed</Text>
             </TouchableOpacity>
           </View>
         </ImageBackground>
@@ -90,7 +92,7 @@ export default function AsteroidDetailsScreen({ route, navigation }: Props) {
       <ImageBackground source={require('../../assets/meteor_bg.jpg')} style={styles.background}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* HEADER BADGE & TITLE */}
-          <View style={styles.headerCard}>
+          <View style={[styles.headerCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
             <View style={styles.headerTopRow}>
               <View style={[styles.threatBadge, { backgroundColor: threatColor }]}>
                 <Text style={styles.threatBadgeText}>{threatLabel.toUpperCase()}</Text>
@@ -102,20 +104,20 @@ export default function AsteroidDetailsScreen({ route, navigation }: Props) {
               </View>
             </View>
 
-            <Text style={styles.asteroidTitle}>{asteroid.name}</Text>
-            <Text style={styles.asteroidSubtitle}>
+            <Text style={[styles.asteroidTitle, { color: colors.textPrimary }]}>{asteroid.name}</Text>
+            <Text style={[styles.asteroidSubtitle, { color: colors.primaryAccent }]}>
               NASA NEO ID: {asteroid.id} {asteroid.absolute_magnitude_h ? `• Absolute Magnitude (H): ${asteroid.absolute_magnitude_h}` : ''}
             </Text>
           </View>
 
           {/* VISUALIZATION CANVAS */}
-          <View style={styles.visContainer}>
+          <View style={[styles.visContainer, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
             <View style={styles.visHeaderRow}>
-              <Text style={styles.visTitle}>CLOSE-APPROACH TRAJECTORY</Text>
-              <Text style={styles.visSubtitle}>Schematic Scale</Text>
+              <Text style={[styles.visTitle, { color: colors.primaryAccent }]}>CLOSE-APPROACH TRAJECTORY</Text>
+              <Text style={[styles.visSubtitle, { color: colors.textMuted }]}>Schematic Scale</Text>
             </View>
 
-            <View style={styles.canvasContainer}>
+            <View style={[styles.canvasContainer, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
               {/* Outer Space Grid Background */}
               <View style={styles.gridOverlay} />
 
@@ -127,10 +129,11 @@ export default function AsteroidDetailsScreen({ route, navigation }: Props) {
                     width: lunarRadiusPx * 2,
                     height: lunarRadiusPx * 2,
                     borderRadius: lunarRadiusPx,
+                    borderColor: colors.primaryAccent,
                   },
                 ]}
               >
-                <Text style={styles.lunarRingLabel}>1 LD</Text>
+                <Text style={[styles.lunarRingLabel, { color: colors.primaryAccent, backgroundColor: colors.raisedSurface }]}>1 LD</Text>
               </View>
 
               {/* Close-Approach Hyperbolic Path Line */}
@@ -164,63 +167,63 @@ export default function AsteroidDetailsScreen({ route, navigation }: Props) {
                 ]}
               >
                 <View style={[styles.asteroidDot, isHazardous && styles.asteroidDotHazardous]} />
-                <View style={styles.asteroidLabelBadge}>
-                  <Text style={styles.asteroidLabelText} numberOfLines={1}>
+                <View style={[styles.asteroidLabelBadge, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+                  <Text style={[styles.asteroidLabelText, { color: colors.textPrimary }]} numberOfLines={1}>
                     {asteroid.name}
                   </Text>
-                  <Text style={styles.asteroidDistanceSub}>{missLdFormatted} LD</Text>
+                  <Text style={[styles.asteroidDistanceSub, { color: colors.primaryAccent }]}>{missLdFormatted} LD</Text>
                 </View>
               </View>
             </View>
 
             {/* Distance & Velocity Telemetry Bar */}
-            <View style={styles.visFooterBar}>
+            <View style={[styles.visFooterBar, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
               <View style={styles.visFooterItem}>
-                <Text style={styles.visFooterLabel}>Miss Distance</Text>
-                <Text style={styles.visFooterValue}>{missKmFormatted} km</Text>
-                <Text style={styles.visFooterSub}>({missLdFormatted} Lunar Distances)</Text>
+                <Text style={[styles.visFooterLabel, { color: colors.textMuted }]}>Miss Distance</Text>
+                <Text style={[styles.visFooterValue, { color: colors.textPrimary }]}>{missKmFormatted} km</Text>
+                <Text style={[styles.visFooterSub, { color: colors.primaryAccent }]}>({missLdFormatted} Lunar Distances)</Text>
               </View>
-              <View style={styles.visFooterDivider} />
+              <View style={[styles.visFooterDivider, { backgroundColor: colors.surfaceBorder }]} />
               <View style={styles.visFooterItemRight}>
-                <Text style={styles.visFooterLabel}>Relative Speed</Text>
-                <Text style={styles.visFooterValue}>{velKmHFormatted} km/h</Text>
-                <Text style={styles.visFooterSub}>({velKmSFormatted} km/s)</Text>
+                <Text style={[styles.visFooterLabel, { color: colors.textMuted }]}>Relative Speed</Text>
+                <Text style={[styles.visFooterValue, { color: colors.textPrimary }]}>{velKmHFormatted} km/h</Text>
+                <Text style={[styles.visFooterSub, { color: colors.primaryAccent }]}>({velKmSFormatted} km/s)</Text>
               </View>
             </View>
           </View>
 
           {/* PHYSICAL CHARACTERISTICS GRID */}
-          <View style={styles.sectionCard}>
-            <Text style={styles.sectionTitle}>PHYSICAL CHARACTERISTICS</Text>
+          <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+            <Text style={[styles.sectionTitle, { color: colors.primaryAccent }]}>PHYSICAL CHARACTERISTICS</Text>
 
             <View style={styles.gridRow}>
               <View style={styles.gridCol}>
-                <Text style={styles.gridLabel}>Est. Diameter (Meters)</Text>
-                <Text style={styles.gridValue}>
+                <Text style={[styles.gridLabel, { color: colors.textMuted }]}>Est. Diameter (Meters)</Text>
+                <Text style={[styles.gridValue, { color: colors.textPrimary }]}>
                   {Math.round(minMeters)} m - {Math.round(maxMeters)} m
                 </Text>
               </View>
 
               <View style={styles.gridColRight}>
-                <Text style={styles.gridLabel}>Est. Diameter (Km)</Text>
-                <Text style={styles.gridValue}>
+                <Text style={[styles.gridLabel, { color: colors.textMuted }]}>Est. Diameter (Km)</Text>
+                <Text style={[styles.gridValue, { color: colors.textPrimary }]}>
                   {minKm.toFixed(2)} - {maxKm.toFixed(2)} km
                 </Text>
               </View>
             </View>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.surfaceBorder }]} />
 
             <View style={styles.gridRow}>
               <View style={styles.gridCol}>
-                <Text style={styles.gridLabel}>Absolute Magnitude (H)</Text>
-                <Text style={styles.gridValue}>
+                <Text style={[styles.gridLabel, { color: colors.textMuted }]}>Absolute Magnitude (H)</Text>
+                <Text style={[styles.gridValue, { color: colors.textPrimary }]}>
                   {asteroid.absolute_magnitude_h !== undefined ? asteroid.absolute_magnitude_h : 'N/A'}
                 </Text>
               </View>
 
               <View style={styles.gridColRight}>
-                <Text style={styles.gridLabel}>Sentry Object Status</Text>
+                <Text style={[styles.gridLabel, { color: colors.textMuted }]}>Sentry Object Status</Text>
                 <Text style={[styles.gridValue, isSentry ? styles.textHazardous : styles.textSafe]}>
                   {isSentry ? 'ACTIVE SENTRY' : 'NO SENTRY RISK'}
                 </Text>
@@ -230,45 +233,45 @@ export default function AsteroidDetailsScreen({ route, navigation }: Props) {
 
           {/* CLOSE APPROACH SPECIFICATIONS */}
           {approach && (
-            <View style={styles.sectionCard}>
-              <Text style={styles.sectionTitle}>CLOSE APPROACH TELEMETRY</Text>
+            <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+              <Text style={[styles.sectionTitle, { color: colors.primaryAccent }]}>CLOSE APPROACH TELEMETRY</Text>
 
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Close-Approach Date</Text>
-                <Text style={styles.specValueHighlight}>
+              <View style={[styles.specRow, { borderBottomColor: colors.surfaceBorder }]}>
+                <Text style={[styles.specLabel, { color: colors.textSecondary }]}>Close-Approach Date</Text>
+                <Text style={[styles.specValueHighlight, { color: colors.primaryAccent }]}>
                   {approach.close_approach_date_full || approach.close_approach_date || 'N/A'}
                 </Text>
               </View>
 
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Miss Distance (Lunar)</Text>
-                <Text style={styles.specValue}>{missLdFormatted} LD</Text>
+              <View style={[styles.specRow, { borderBottomColor: colors.surfaceBorder }]}>
+                <Text style={[styles.specLabel, { color: colors.textSecondary }]}>Miss Distance (Lunar)</Text>
+                <Text style={[styles.specValue, { color: colors.textPrimary }]}>{missLdFormatted} LD</Text>
               </View>
 
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Miss Distance (Km)</Text>
-                <Text style={styles.specValue}>{missKmFormatted} km</Text>
+              <View style={[styles.specRow, { borderBottomColor: colors.surfaceBorder }]}>
+                <Text style={[styles.specLabel, { color: colors.textSecondary }]}>Miss Distance (Km)</Text>
+                <Text style={[styles.specValue, { color: colors.textPrimary }]}>{missKmFormatted} km</Text>
               </View>
 
               {approach.miss_distance?.astronomical && (
-                <View style={styles.specRow}>
-                  <Text style={styles.specLabel}>Miss Distance (AU)</Text>
-                  <Text style={styles.specValue}>
+                <View style={[styles.specRow, { borderBottomColor: colors.surfaceBorder }]}>
+                  <Text style={[styles.specLabel, { color: colors.textSecondary }]}>Miss Distance (AU)</Text>
+                  <Text style={[styles.specValue, { color: colors.textPrimary }]}>
                     {parseFloat(approach.miss_distance.astronomical).toFixed(4)} AU
                   </Text>
                 </View>
               )}
 
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Relative Velocity</Text>
-                <Text style={styles.specValue}>
+              <View style={[styles.specRow, { borderBottomColor: colors.surfaceBorder }]}>
+                <Text style={[styles.specLabel, { color: colors.textSecondary }]}>Relative Velocity</Text>
+                <Text style={[styles.specValue, { color: colors.textPrimary }]}>
                   {velKmHFormatted} km/h ({velKmSFormatted} km/s)
                 </Text>
               </View>
 
-              <View style={styles.specRow}>
-                <Text style={styles.specLabel}>Orbiting Celestial Body</Text>
-                <Text style={styles.specValue}>
+              <View style={[styles.specRow, { borderBottomColor: colors.surfaceBorder }]}>
+                <Text style={[styles.specLabel, { color: colors.textSecondary }]}>Orbiting Celestial Body</Text>
+                <Text style={[styles.specValue, { color: colors.textPrimary }]}>
                   {approach.orbiting_body || 'Earth'}
                 </Text>
               </View>
@@ -277,8 +280,8 @@ export default function AsteroidDetailsScreen({ route, navigation }: Props) {
 
           {/* UPCOMING CLOSE APPROACHES */}
           {asteroid.close_approach_data && asteroid.close_approach_data.length > 1 && (
-            <View style={styles.sectionCard}>
-              <Text style={styles.sectionTitle}>RECORDED CLOSE APPROACHES ({asteroid.close_approach_data.length})</Text>
+            <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+              <Text style={[styles.sectionTitle, { color: colors.primaryAccent }]}>RECORDED CLOSE APPROACHES ({asteroid.close_approach_data.length})</Text>
               {asteroid.close_approach_data.slice(0, 5).map((cad, idx) => {
                 const dateStr = cad.close_approach_date_full || cad.close_approach_date || 'N/A';
                 const cadKm = cad.miss_distance?.kilometers
@@ -289,12 +292,12 @@ export default function AsteroidDetailsScreen({ route, navigation }: Props) {
                   : 'N/A';
 
                 return (
-                  <View key={idx} style={styles.approachListItem}>
+                  <View key={idx} style={[styles.approachListItem, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
                     <View style={styles.approachListHeader}>
-                      <Text style={styles.approachListDate}>{dateStr}</Text>
-                      <Text style={styles.approachListBody}>{cad.orbiting_body || 'Earth'}</Text>
+                      <Text style={[styles.approachListDate, { color: colors.textPrimary }]}>{dateStr}</Text>
+                      <Text style={[styles.approachListBody, { color: colors.primaryAccent }]}>{cad.orbiting_body || 'Earth'}</Text>
                     </View>
-                    <Text style={styles.approachListSub}>
+                    <Text style={[styles.approachListSub, { color: colors.textMuted }]}>
                       Miss Distance: {cadKm} km ({cadLd} LD)
                     </Text>
                   </View>
@@ -305,36 +308,36 @@ export default function AsteroidDetailsScreen({ route, navigation }: Props) {
 
           {/* ORBITAL PARAMETERS (IF NASA ORBITAL_DATA PRESENT) */}
           {asteroid.orbital_data && (
-            <View style={styles.sectionCard}>
-              <Text style={styles.sectionTitle}>ORBITAL MECHANICS (JPL)</Text>
+            <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+              <Text style={[styles.sectionTitle, { color: colors.primaryAccent }]}>ORBITAL MECHANICS (JPL)</Text>
 
               {asteroid.orbital_data.orbit_class?.orbit_class_type && (
-                <View style={styles.specRow}>
-                  <Text style={styles.specLabel}>Orbit Class</Text>
-                  <Text style={styles.specValueHighlight}>
+                <View style={[styles.specRow, { borderBottomColor: colors.surfaceBorder }]}>
+                  <Text style={[styles.specLabel, { color: colors.textSecondary }]}>Orbit Class</Text>
+                  <Text style={[styles.specValueHighlight, { color: colors.primaryAccent }]}>
                     {asteroid.orbital_data.orbit_class.orbit_class_type} ({asteroid.orbital_data.orbit_class.orbit_class_description || ''})
                   </Text>
                 </View>
               )}
 
               {asteroid.orbital_data.eccentricity && (
-                <View style={styles.specRow}>
-                  <Text style={styles.specLabel}>Eccentricity (e)</Text>
-                  <Text style={styles.specValue}>{parseFloat(asteroid.orbital_data.eccentricity).toFixed(4)}</Text>
+                <View style={[styles.specRow, { borderBottomColor: colors.surfaceBorder }]}>
+                  <Text style={[styles.specLabel, { color: colors.textSecondary }]}>Eccentricity (e)</Text>
+                  <Text style={[styles.specValue, { color: colors.textPrimary }]}>{parseFloat(asteroid.orbital_data.eccentricity).toFixed(4)}</Text>
                 </View>
               )}
 
               {asteroid.orbital_data.inclination && (
-                <View style={styles.specRow}>
-                  <Text style={styles.specLabel}>Inclination (i)</Text>
-                  <Text style={styles.specValue}>{parseFloat(asteroid.orbital_data.inclination).toFixed(2)}°</Text>
+                <View style={[styles.specRow, { borderBottomColor: colors.surfaceBorder }]}>
+                  <Text style={[styles.specLabel, { color: colors.textSecondary }]}>Inclination (i)</Text>
+                  <Text style={[styles.specValue, { color: colors.textPrimary }]}>{parseFloat(asteroid.orbital_data.inclination).toFixed(2)}°</Text>
                 </View>
               )}
 
               {asteroid.orbital_data.orbital_period && (
-                <View style={styles.specRow}>
-                  <Text style={styles.specLabel}>Orbital Period</Text>
-                  <Text style={styles.specValue}>{Math.round(parseFloat(asteroid.orbital_data.orbital_period))} days</Text>
+                <View style={[styles.specRow, { borderBottomColor: colors.surfaceBorder }]}>
+                  <Text style={[styles.specLabel, { color: colors.textSecondary }]}>Orbital Period</Text>
+                  <Text style={[styles.specValue, { color: colors.textPrimary }]}>{Math.round(parseFloat(asteroid.orbital_data.orbital_period))} days</Text>
                 </View>
               )}
             </View>
@@ -342,8 +345,8 @@ export default function AsteroidDetailsScreen({ route, navigation }: Props) {
 
           {/* NASA JPL WEB BUTTON */}
           {asteroid.nasa_jpl_url && (
-            <TouchableOpacity style={styles.jplButton} onPress={openNasaJplLink} activeOpacity={0.8}>
-              <Text style={styles.jplButtonText}>View Official NASA JPL Small-Body Database &rarr;</Text>
+            <TouchableOpacity style={[styles.jplButton, { backgroundColor: colors.surface, borderColor: colors.primaryAccent }]} onPress={openNasaJplLink} activeOpacity={0.8}>
+              <Text style={[styles.jplButtonText, { color: colors.primaryAccent }]}>View Official NASA JPL Small-Body Database &rarr;</Text>
             </TouchableOpacity>
           )}
         </ScrollView>
@@ -385,7 +388,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   backButton: {
-    backgroundColor: '#00d4ff',
+    backgroundColor: '#5B9CFF',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 20,
@@ -401,7 +404,7 @@ const styles = StyleSheet.create({
     padding: 18,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.3)',
+    borderColor: 'rgba(91, 156, 255, 0.3)',
   },
   headerTopRow: {
     flexDirection: 'row',
@@ -450,7 +453,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   asteroidSubtitle: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -469,7 +472,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   visTitle: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 12,
     fontWeight: 'bold',
     letterSpacing: 1,
@@ -488,7 +491,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'relative',
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.2)',
+    borderColor: 'rgba(91, 156, 255, 0.2)',
   },
   gridOverlay: {
     position: 'absolute',
@@ -503,13 +506,13 @@ const styles = StyleSheet.create({
   lunarRing: {
     position: 'absolute',
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.35)',
+    borderColor: 'rgba(91, 156, 255, 0.35)',
     borderStyle: 'dashed',
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
   lunarRingLabel: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 8,
     fontWeight: 'bold',
     marginTop: 2,
@@ -529,10 +532,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#00b4d8',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#00d4ff',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 10,
     elevation: 8,
     zIndex: 4,
   },
@@ -562,15 +561,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#ecc94b',
     borderWidth: 2,
     borderColor: '#ffffff',
-    shadowColor: '#ecc94b',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 6,
     elevation: 6,
   },
   asteroidDotHazardous: {
     backgroundColor: '#ef4444',
-    shadowColor: '#ef4444',
   },
   asteroidLabelBadge: {
     backgroundColor: 'rgba(11, 13, 27, 0.9)',
@@ -589,7 +583,7 @@ const styles = StyleSheet.create({
     maxWidth: 90,
   },
   asteroidDistanceSub: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 8,
     fontWeight: '600',
   },
@@ -628,7 +622,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   visFooterSub: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 10,
     fontWeight: '600',
     marginTop: 1,
@@ -642,7 +636,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   sectionTitle: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 12,
     fontWeight: 'bold',
     letterSpacing: 1,
@@ -695,7 +689,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   specValueHighlight: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 12,
     fontWeight: 'bold',
   },
@@ -718,7 +712,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   approachListBody: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 11,
     fontWeight: '600',
   },
@@ -732,11 +726,11 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#00d4ff',
+    borderColor: '#5B9CFF',
     marginTop: 4,
   },
   jplButtonText: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 13,
     fontWeight: 'bold',
   },

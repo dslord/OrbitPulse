@@ -24,10 +24,12 @@ import {
   RootStackParamList,
 } from '../types';
 import { getCleanErrorMessage } from '../utils/errorUtils';
+import { useTheme } from '../context/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'TodayInSpace'>;
 
 export default function TodayInSpaceScreen({ navigation }: Props) {
+  const { colors, activeTheme } = useTheme();
   // 1-Second interval ticker for live countdowns
   const [nowMs, setNowMs] = useState<number>(Date.now());
 
@@ -162,28 +164,28 @@ export default function TodayInSpaceScreen({ navigation }: Props) {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#00d4ff" colors={['#00d4ff']} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primaryAccent} colors={[colors.primaryAccent]} />
           }
         >
           {/* DASHBOARD HEADER */}
-          <View style={styles.headerCard}>
-            <Text style={styles.headerTitle}>TODAY IN SPACE</Text>
-            <Text style={styles.headerDate}>{todayFormatted}</Text>
+          <View style={[styles.headerCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+            <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>TODAY IN SPACE</Text>
+            <Text style={[styles.headerDate, { color: colors.primaryAccent }]}>{todayFormatted}</Text>
           </View>
 
           {/* SECTION 1: TODAY'S LAUNCHES */}
-          <View style={styles.sectionCard}>
+          <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
             <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionTitle}>UPCOMING SPACE LAUNCHES</Text>
+              <Text style={[styles.sectionTitle, { color: colors.primaryAccent }]}>UPCOMING SPACE LAUNCHES</Text>
               <TouchableOpacity onPress={() => navigation.navigate('LaunchTracker')}>
-                <Text style={styles.sectionActionText}>View All ({launches.length}) &rarr;</Text>
+                <Text style={[styles.sectionActionText, { color: colors.textMuted }]}>View All ({launches.length}) &rarr;</Text>
               </TouchableOpacity>
             </View>
 
             {launchesLoading && (
               <View style={styles.sectionLoading}>
-                <ActivityIndicator size="small" color="#00d4ff" />
-                <Text style={styles.loadingText}>Fetching launch manifests...</Text>
+                <ActivityIndicator size="small" color={colors.primaryAccent} />
+                <Text style={[styles.loadingText, { color: colors.textMuted }]}>Fetching launch manifests...</Text>
               </View>
             )}
 
@@ -192,26 +194,26 @@ export default function TodayInSpaceScreen({ navigation }: Props) {
             )}
 
             {!launchesLoading && !launchesError && launches.length === 0 && (
-              <Text style={styles.sectionEmpty}>No upcoming launch manifests recorded for today.</Text>
+              <Text style={[styles.sectionEmpty, { color: colors.textMuted }]}>No upcoming launch manifests recorded for today.</Text>
             )}
 
             {!launchesLoading && !launchesError && launches.slice(0, 2).map((launch) => (
               <TouchableOpacity
                 key={launch.id}
-                style={styles.launchCard}
+                style={[styles.launchCard, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}
                 activeOpacity={0.8}
                 onPress={() => navigation.navigate('LaunchDetails', { launch })}
               >
                 <View style={styles.launchCardHeader}>
-                  <Text style={styles.launchName} numberOfLines={1}>
+                  <Text style={[styles.launchName, { color: colors.textPrimary }]} numberOfLines={1}>
                     {launch.name}
                   </Text>
-                  <Text style={styles.launchCountdown}>{formatCountdown(launch.net)}</Text>
+                  <Text style={[styles.launchCountdown, { color: colors.primaryAccent }]}>{formatCountdown(launch.net)}</Text>
                 </View>
-                <Text style={styles.launchMeta}>
+                <Text style={[styles.launchMeta, { color: colors.textMuted }]}>
                   {launch.providerName} • {launch.rocketName}
                 </Text>
-                <Text style={styles.launchTime}>
+                <Text style={[styles.launchTime, { color: colors.textSecondary }]}>
                   NET: {new Date(launch.net).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                 </Text>
               </TouchableOpacity>
@@ -219,18 +221,18 @@ export default function TodayInSpaceScreen({ navigation }: Props) {
           </View>
 
           {/* SECTION 2: ISS LIVE STATUS */}
-          <View style={styles.sectionCard}>
+          <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
             <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionTitle}>ISS LIVE ORBITAL STATUS</Text>
+              <Text style={[styles.sectionTitle, { color: colors.primaryAccent }]}>ISS LIVE ORBITAL STATUS</Text>
               <TouchableOpacity onPress={() => navigation.navigate('ISSlocator')}>
-                <Text style={styles.sectionActionText}>Live Tracker Map &rarr;</Text>
+                <Text style={[styles.sectionActionText, { color: colors.textMuted }]}>Live Tracker Map &rarr;</Text>
               </TouchableOpacity>
             </View>
 
             {issLoading && (
               <View style={styles.sectionLoading}>
-                <ActivityIndicator size="small" color="#00d4ff" />
-                <Text style={styles.loadingText}>Connecting to ISS telemetry node...</Text>
+                <ActivityIndicator size="small" color={colors.primaryAccent} />
+                <Text style={[styles.loadingText, { color: colors.textMuted }]}>Connecting to ISS telemetry node...</Text>
               </View>
             )}
 
@@ -239,36 +241,36 @@ export default function TodayInSpaceScreen({ navigation }: Props) {
             )}
 
             {!issLoading && !issError && issData && (
-              <View style={styles.issGrid}>
+              <View style={[styles.issGrid, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
                 <View style={styles.issGridItem}>
-                  <Text style={styles.issLabel}>Latitude</Text>
-                  <Text style={styles.issValue}>{issData.latitude.toFixed(2)}° N</Text>
+                  <Text style={[styles.issLabel, { color: colors.textMuted }]}>Latitude</Text>
+                  <Text style={[styles.issValue, { color: colors.textPrimary }]}>{issData.latitude.toFixed(2)}° N</Text>
                 </View>
                 <View style={styles.issGridItemCenter}>
-                  <Text style={styles.issLabel}>Longitude</Text>
-                  <Text style={styles.issValue}>{issData.longitude.toFixed(2)}° E</Text>
+                  <Text style={[styles.issLabel, { color: colors.textMuted }]}>Longitude</Text>
+                  <Text style={[styles.issValue, { color: colors.textPrimary }]}>{issData.longitude.toFixed(2)}° E</Text>
                 </View>
                 <View style={styles.issGridItemRight}>
-                  <Text style={styles.issLabel}>Altitude</Text>
-                  <Text style={styles.issValueHighlight}>{Math.round(issData.altitude)} km</Text>
+                  <Text style={[styles.issLabel, { color: colors.textMuted }]}>Altitude</Text>
+                  <Text style={[styles.issValueHighlight, { color: colors.primaryAccent }]}>{Math.round(issData.altitude)} km</Text>
                 </View>
               </View>
             )}
           </View>
 
           {/* SECTION 3: ASTEROID / NEO RADAR */}
-          <View style={styles.sectionCard}>
+          <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
             <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionTitle}>ASTEROID RADAR SUMMARY</Text>
+              <Text style={[styles.sectionTitle, { color: colors.primaryAccent }]}>ASTEROID RADAR SUMMARY</Text>
               <TouchableOpacity onPress={() => navigation.navigate('Meteor')}>
-                <Text style={styles.sectionActionText}>Radar Feed &rarr;</Text>
+                <Text style={[styles.sectionActionText, { color: colors.textMuted }]}>Radar Feed &rarr;</Text>
               </TouchableOpacity>
             </View>
 
             {neoLoading && (
               <View style={styles.sectionLoading}>
-                <ActivityIndicator size="small" color="#00d4ff" />
-                <Text style={styles.loadingText}>Analyzing NASA NEO radar stream...</Text>
+                <ActivityIndicator size="small" color={colors.primaryAccent} />
+                <Text style={[styles.loadingText, { color: colors.textMuted }]}>Analyzing NASA NEO radar stream...</Text>
               </View>
             )}
 
@@ -278,22 +280,22 @@ export default function TodayInSpaceScreen({ navigation }: Props) {
 
             {!neoLoading && !neoError && (
               <View style={styles.neoSummaryRow}>
-                <View style={styles.neoStatCard}>
-                  <Text style={styles.neoStatValue}>{meteors.length}</Text>
-                  <Text style={styles.neoStatLabel}>NEO Approaches</Text>
+                <View style={[styles.neoStatCard, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
+                  <Text style={[styles.neoStatValue, { color: colors.textPrimary }]}>{meteors.length}</Text>
+                  <Text style={[styles.neoStatLabel, { color: colors.textMuted }]}>NEO Approaches</Text>
                 </View>
 
-                <View style={styles.neoStatCard}>
-                  <Text style={[styles.neoStatValue, hazardousCount > 0 && styles.textHazardous]}>
+                <View style={[styles.neoStatCard, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
+                  <Text style={[styles.neoStatValue, { color: colors.textPrimary }, hazardousCount > 0 && styles.textHazardous]}>
                     {hazardousCount}
                   </Text>
-                  <Text style={styles.neoStatLabel}>Hazardous Risks</Text>
+                  <Text style={[styles.neoStatLabel, { color: colors.textMuted }]}>Hazardous Risks</Text>
                 </View>
 
-                <View style={styles.neoStatCardLarge}>
-                  <Text style={styles.neoStatLabel}>Closest Miss Distance</Text>
-                  <Text style={styles.neoStatValueHighlight}>{closestMissKm} km</Text>
-                  <Text style={styles.neoStatSub} numberOfLines={1}>
+                <View style={[styles.neoStatCardLarge, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
+                  <Text style={[styles.neoStatLabel, { color: colors.textMuted }]}>Closest Miss Distance</Text>
+                  <Text style={[styles.neoStatValueHighlight, { color: colors.primaryAccent }]}>{closestMissKm} km</Text>
+                  <Text style={[styles.neoStatSub, { color: colors.textMuted }]} numberOfLines={1}>
                     {closestMeteor ? closestMeteor.name : 'N/A'}
                   </Text>
                 </View>
@@ -302,47 +304,47 @@ export default function TodayInSpaceScreen({ navigation }: Props) {
           </View>
 
           {/* SECTION 4: LATEST SPACE NEWS */}
-          <View style={styles.sectionCard}>
+          <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
             <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionTitle}>LATEST SPACE NEWS</Text>
+              <Text style={[styles.sectionTitle, { color: colors.primaryAccent }]}>LATEST SPACE NEWS</Text>
               <TouchableOpacity onPress={() => navigation.navigate('SpaceNews')}>
-                <Text style={styles.sectionActionText}>Full Feed &rarr;</Text>
+                <Text style={[styles.sectionActionText, { color: colors.textMuted }]}>Full Feed &rarr;</Text>
               </TouchableOpacity>
             </View>
 
             {newsLoading && (
               <View style={styles.sectionLoading}>
-                <ActivityIndicator size="small" color="#00d4ff" />
-                <Text style={styles.loadingText}>Fetching Spaceflight News...</Text>
+                <ActivityIndicator size="small" color={colors.primaryAccent} />
+                <Text style={[styles.loadingText, { color: colors.textMuted }]}>Fetching Spaceflight News...</Text>
               </View>
             )}
 
             {newsError && !newsLoading && (
-              <Text style={styles.sectionUnavailable}>{newsError}</Text>
+              <Text style={[styles.sectionUnavailable, { color: colors.textMuted }]}>{newsError}</Text>
             )}
 
             {!newsLoading && !newsError && news.length === 0 && (
-              <Text style={styles.sectionEmpty}>No spaceflight articles available right now.</Text>
+              <Text style={[styles.sectionEmpty, { color: colors.textMuted }]}>No spaceflight articles available right now.</Text>
             )}
 
             {!newsLoading && !newsError && news.slice(0, 4).map((item) => (
               <TouchableOpacity
                 key={item.id}
-                style={styles.newsCard}
+                style={[styles.newsCard, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}
                 activeOpacity={0.8}
                 onPress={() => Linking.openURL(item.url).catch(() => {})}
               >
                 {item.image_url ? (
-                  <Image source={{ uri: item.image_url }} style={styles.newsImage} />
+                  <Image source={{ uri: item.image_url }} style={[styles.newsImage, { backgroundColor: colors.surface }]} />
                 ) : (
-                  <View style={styles.newsImagePlaceholder} />
+                  <View style={[styles.newsImagePlaceholder, { backgroundColor: colors.surface }]} />
                 )}
 
                 <View style={styles.newsContent}>
-                  <Text style={styles.newsTitle} numberOfLines={2}>
+                  <Text style={[styles.newsTitle, { color: colors.textPrimary }]} numberOfLines={2}>
                     {item.title}
                   </Text>
-                  <Text style={styles.newsMeta}>
+                  <Text style={[styles.newsMeta, { color: colors.primaryAccent }]}>
                     {item.news_site} • {new Date(item.published_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                   </Text>
                 </View>
@@ -384,7 +386,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   headerDate: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 13,
     fontWeight: '600',
     marginTop: 4,
@@ -404,7 +406,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 12,
     fontWeight: 'bold',
     letterSpacing: 1,
@@ -463,7 +465,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   launchCountdown: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 11,
     fontWeight: 'bold',
     fontVariant: ['tabular-nums'],
@@ -510,7 +512,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   issValueHighlight: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 13,
     fontWeight: 'bold',
     marginTop: 2,
@@ -536,7 +538,7 @@ const styles = StyleSheet.create({
     width: '40%',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.2)',
+    borderColor: 'rgba(91, 156, 255, 0.2)',
   },
   neoStatValue: {
     color: '#ffffff',
@@ -544,7 +546,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   neoStatValueHighlight: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 13,
     fontWeight: 'bold',
     marginTop: 2,
@@ -599,7 +601,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   newsMeta: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 10,
     fontWeight: '600',
   },

@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useTheme } from '../context/ThemeContext';
 
 import HomeScreen from '../screens/HomeScreen';
 import ISSlocatorScreen from '../screens/ISSlocatorScreen';
@@ -23,21 +24,23 @@ import { RootStackParamList } from '../types';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function AppNavigator() {
+  const { colors } = useTheme();
+
   return (
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="Home"
         screenOptions={{
           headerStyle: {
-            backgroundColor: '#0b0d1b',
+            backgroundColor: colors.surface,
           },
-          headerTintColor: '#00d4ff',
+          headerTintColor: colors.primaryAccent,
           headerTitleStyle: {
             fontWeight: 'bold',
             fontSize: 18,
-            color: '#ffffff',
+            color: colors.textPrimary,
           },
-          contentStyle: { backgroundColor: '#0b0d1b' },
+          contentStyle: { backgroundColor: colors.background },
         }}
       >
         <Stack.Screen

@@ -15,6 +15,7 @@ import {
   SpacecraftOrbitRegion,
 } from '../types';
 import { SPACECRAFT_DATA } from '../data/spacecraftData';
+import { useTheme } from '../context/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SpacecraftTracker'>;
 
@@ -36,6 +37,7 @@ const STATUS_FILTERS: ('All' | 'Active' | 'En Route' | 'Completed')[] = [
 ];
 
 export default function SpacecraftTrackerScreen({ navigation }: Props) {
+  const { colors, activeTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedRegion, setSelectedRegion] = useState<SpacecraftOrbitRegion | 'All'>('All');
   const [selectedStatus, setSelectedStatus] = useState<'All' | 'Active' | 'En Route' | 'Completed'>('All');
@@ -82,19 +84,19 @@ export default function SpacecraftTrackerScreen({ navigation }: Props) {
           keyboardShouldPersistTaps="handled"
         >
           {/* HEADER BANNER */}
-          <View style={styles.headerCard}>
-            <Text style={styles.headerTitle}>SPACECRAFT TRACKER</Text>
-            <Text style={styles.headerSubtitle}>
+          <View style={[styles.headerCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+            <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>SPACECRAFT TRACKER</Text>
+            <Text style={[styles.headerSubtitle, { color: colors.primaryAccent }]}>
               Real Orbital Telemetry & Trajectories of Deep Space Probes & Observatories
             </Text>
           </View>
 
           {/* SEARCH BAR */}
-          <View style={styles.searchContainer}>
+          <View style={[styles.searchContainer, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
             <TextInput
-              style={styles.searchInput}
+              style={[styles.searchInput, { color: colors.textPrimary }]}
               placeholder="Search spacecraft, mission, agency, or target..."
-              placeholderTextColor="#64748b"
+              placeholderTextColor={colors.textMuted}
               value={searchQuery}
               onChangeText={setSearchQuery}
               autoCapitalize="none"
@@ -102,25 +104,38 @@ export default function SpacecraftTrackerScreen({ navigation }: Props) {
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
-                <Text style={styles.clearText}>Clear</Text>
+                <Text style={[styles.clearText, { color: colors.textMuted }]}>Clear</Text>
               </TouchableOpacity>
             )}
           </View>
 
           {/* ORBIT REGION FILTERS */}
           <View style={styles.filterSection}>
-            <Text style={styles.filterLabel}>ORBITAL REGION</Text>
+            <Text style={[styles.filterLabel, { color: colors.textMuted }]}>ORBITAL REGION</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
               {REGION_FILTERS.map((reg) => {
                 const active = selectedRegion === reg;
                 return (
                   <TouchableOpacity
                     key={reg}
-                    style={[styles.chip, active && styles.chipActive]}
+                    style={[
+                      styles.chip,
+                      {
+                        backgroundColor: active ? colors.selectedSurface : colors.surface,
+                        borderColor: active ? colors.selectedIndicator : colors.surfaceBorder,
+                      },
+                    ]}
                     onPress={() => setSelectedRegion(reg)}
                     activeOpacity={0.7}
                   >
-                    <Text style={[styles.chipText, active && styles.chipTextActive]}>{reg}</Text>
+                    <Text
+                      style={[
+                        styles.chipText,
+                        { color: active ? colors.selectedText : colors.textMuted },
+                      ]}
+                    >
+                      {reg}
+                    </Text>
                   </TouchableOpacity>
                 );
               })}
@@ -129,18 +144,31 @@ export default function SpacecraftTrackerScreen({ navigation }: Props) {
 
           {/* STATUS FILTERS */}
           <View style={styles.filterSection}>
-            <Text style={styles.filterLabel}>STATUS</Text>
+            <Text style={[styles.filterLabel, { color: colors.textMuted }]}>STATUS</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
               {STATUS_FILTERS.map((st) => {
                 const active = selectedStatus === st;
                 return (
                   <TouchableOpacity
                     key={st}
-                    style={[styles.chip, active && styles.chipActive]}
+                    style={[
+                      styles.chip,
+                      {
+                        backgroundColor: active ? colors.selectedSurface : colors.surface,
+                        borderColor: active ? colors.selectedIndicator : colors.surfaceBorder,
+                      },
+                    ]}
                     onPress={() => setSelectedStatus(st)}
                     activeOpacity={0.7}
                   >
-                    <Text style={[styles.chipText, active && styles.chipTextActive]}>{st}</Text>
+                    <Text
+                      style={[
+                        styles.chipText,
+                        { color: active ? colors.selectedText : colors.textMuted },
+                      ]}
+                    >
+                      {st}
+                    </Text>
                   </TouchableOpacity>
                 );
               })}
@@ -149,9 +177,9 @@ export default function SpacecraftTrackerScreen({ navigation }: Props) {
 
           {/* SPACECRAFT CATALOG LIST */}
           {filteredSpacecraft.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyTitle}>No Spacecraft Found</Text>
-              <Text style={styles.emptyText}>
+            <View style={[styles.emptyContainer, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+              <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No Spacecraft Found</Text>
+              <Text style={[styles.emptyText, { color: colors.textMuted }]}>
                 No spacecraft match your current query and filters. Try clearing search or choosing another filter.
               </Text>
             </View>
@@ -162,37 +190,37 @@ export default function SpacecraftTrackerScreen({ navigation }: Props) {
               return (
                 <TouchableOpacity
                   key={sc.id}
-                  style={styles.cardContainer}
+                  style={[styles.cardContainer, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}
                   activeOpacity={0.8}
                   onPress={() => navigation.navigate('SpacecraftDetails', { spacecraft: sc })}
                 >
                   <View style={styles.cardHeaderRow}>
                     <View style={styles.badgeGroup}>
-                      <View style={styles.agencyBadge}>
-                        <Text style={styles.agencyBadgeText}>{sc.agencyAbbrev}</Text>
+                      <View style={[styles.agencyBadge, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
+                        <Text style={[styles.agencyBadgeText, { color: colors.primaryAccent }]}>{sc.agencyAbbrev}</Text>
                       </View>
-                      <View style={styles.regionBadge}>
-                        <Text style={styles.regionBadgeText}>{sc.region}</Text>
+                      <View style={[styles.regionBadge, { backgroundColor: colors.raisedSurface }]}>
+                        <Text style={[styles.regionBadgeText, { color: colors.textSecondary }]}>{sc.region}</Text>
                       </View>
                     </View>
 
-                    <View style={[styles.trackingPill, isLive ? styles.livePill : styles.staticPill]}>
-                      <View style={[styles.statusDot, { backgroundColor: isLive ? '#10b981' : '#00d4ff' }]} />
-                      <Text style={[styles.trackingText, { color: isLive ? '#10b981' : '#00d4ff' }]}>
+                    <View style={[styles.trackingPill, { borderColor: isLive ? colors.liveMuted : colors.surfaceBorder, backgroundColor: isLive ? colors.liveMuted : colors.raisedSurface }]}>
+                      <View style={[styles.statusDot, { backgroundColor: isLive ? colors.live : colors.primaryAccent }]} />
+                      <Text style={[styles.trackingText, { color: isLive ? colors.live : colors.primaryAccent }]}>
                         {isLive ? 'LIVE TELEMETRY' : 'TRAJECTORY VIEW'}
                       </Text>
                     </View>
                   </View>
 
-                  <Text style={styles.spacecraftName}>{sc.name}</Text>
-                  <Text style={styles.missionText}>{sc.mission}</Text>
-                  <Text style={styles.destinationText} numberOfLines={1}>
+                  <Text style={[styles.spacecraftName, { color: colors.textPrimary }]}>{sc.name}</Text>
+                  <Text style={[styles.missionText, { color: colors.primaryAccent }]}>{sc.mission}</Text>
+                  <Text style={[styles.destinationText, { color: colors.textMuted }]} numberOfLines={1}>
                     Target: {sc.destination}
                   </Text>
 
-                  <View style={styles.cardFooter}>
-                    <Text style={styles.launchDateText}>Launched: {sc.launchDate}</Text>
-                    <Text style={styles.detailsLink}>Track Spacecraft &rarr;</Text>
+                  <View style={[styles.cardFooter, { borderTopColor: colors.surfaceBorder }]}>
+                    <Text style={[styles.launchDateText, { color: colors.textMuted }]}>Launched: {sc.launchDate}</Text>
+                    <Text style={[styles.detailsLink, { color: colors.primaryAccent }]}>Track Spacecraft &rarr;</Text>
                   </View>
                 </TouchableOpacity>
               );
@@ -207,7 +235,6 @@ export default function SpacecraftTrackerScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0b0d1b',
   },
   background: {
     flex: 1,
@@ -219,38 +246,31 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   headerCard: {
-    backgroundColor: 'rgba(18, 22, 44, 0.92)',
     borderRadius: 16,
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.25)',
   },
   headerTitle: {
-    color: '#f8fafc',
     fontSize: 18,
     fontWeight: 'bold',
     letterSpacing: 0.8,
   },
   headerSubtitle: {
-    color: '#00d4ff',
     fontSize: 12,
     marginTop: 4,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(18, 22, 44, 0.85)',
     borderRadius: 12,
     paddingHorizontal: 12,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.2)',
   },
   searchInput: {
     flex: 1,
     height: 44,
-    color: '#f8fafc',
     fontSize: 13,
   },
   clearButton: {
@@ -258,7 +278,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   clearText: {
-    color: '#94a3b8',
     fontSize: 11,
     fontWeight: '600',
   },
@@ -266,7 +285,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   filterLabel: {
-    color: '#94a3b8',
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1,
@@ -280,52 +298,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 14,
-    backgroundColor: 'rgba(18, 22, 44, 0.8)',
     marginRight: 8,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.15)',
-  },
-  chipActive: {
-    backgroundColor: '#00d4ff',
-    borderColor: '#00d4ff',
   },
   chipText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#94a3b8',
-  },
-  chipTextActive: {
-    color: '#0b0d1b',
-    fontWeight: 'bold',
   },
   emptyContainer: {
-    backgroundColor: 'rgba(18, 22, 44, 0.88)',
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
     marginTop: 10,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.18)',
   },
   emptyTitle: {
-    color: '#f8fafc',
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 6,
   },
   emptyText: {
-    color: '#94a3b8',
     fontSize: 12,
     textAlign: 'center',
     lineHeight: 18,
   },
   cardContainer: {
-    backgroundColor: 'rgba(18, 22, 44, 0.92)',
     borderRadius: 16,
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.18)',
   },
   cardHeaderRow: {
     flexDirection: 'row',
@@ -340,26 +341,21 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   agencyBadge: {
-    backgroundColor: 'rgba(0, 212, 255, 0.12)',
     borderRadius: 6,
     paddingVertical: 3,
     paddingHorizontal: 8,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.3)',
   },
   agencyBadgeText: {
-    color: '#00d4ff',
     fontSize: 10,
     fontWeight: 'bold',
   },
   regionBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 6,
     paddingVertical: 3,
     paddingHorizontal: 8,
   },
   regionBadgeText: {
-    color: '#cbd5e1',
     fontSize: 10,
     fontWeight: '600',
   },
@@ -370,14 +366,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 10,
     borderWidth: 1,
-  },
-  livePill: {
-    borderColor: 'rgba(34, 197, 94, 0.4)',
-    backgroundColor: 'rgba(34, 197, 94, 0.12)',
-  },
-  staticPill: {
-    borderColor: 'rgba(0, 212, 255, 0.3)',
-    backgroundColor: 'rgba(0, 212, 255, 0.1)',
   },
   statusDot: {
     width: 6,
@@ -390,19 +378,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   spacecraftName: {
-    color: '#f8fafc',
     fontSize: 17,
     fontWeight: 'bold',
     marginBottom: 2,
   },
   missionText: {
-    color: '#00d4ff',
     fontSize: 11,
     fontWeight: '600',
     marginBottom: 6,
   },
   destinationText: {
-    color: '#94a3b8',
     fontSize: 12,
     marginBottom: 12,
   },
@@ -411,15 +396,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
     paddingTop: 10,
   },
   launchDateText: {
-    color: '#94a3b8',
     fontSize: 11,
   },
   detailsLink: {
-    color: '#00d4ff',
     fontSize: 12,
     fontWeight: 'bold',
   },

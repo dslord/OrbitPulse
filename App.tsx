@@ -2,15 +2,26 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import AppNavigator from './src/navigation/AppNavigator';
+
+function MainApp() {
+  const { activeTheme, colors } = useTheme();
+
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar style={activeTheme === 'dark' ? 'light' : 'dark'} />
+      <AppNavigator />
+    </View>
+  );
+}
 
 export default function App() {
   return (
     <SafeAreaProvider>
-      <View style={styles.container}>
-        <StatusBar style="light" />
-        <AppNavigator />
-      </View>
+      <ThemeProvider>
+        <MainApp />
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }
@@ -18,6 +29,5 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0b0d1b',
   },
 });

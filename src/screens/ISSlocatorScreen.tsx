@@ -11,6 +11,7 @@ import {
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import { useISSTelemetry } from '../hooks/useISSTelemetry';
 import { formatFreshnessLabel } from '../utils/timeUtils';
+import { useTheme } from '../context/ThemeContext';
 import {
   fetchISSGPData,
   calculateOrbitalVisualization,
@@ -18,6 +19,7 @@ import {
 import { SatelliteGPData } from '../types';
 
 export default function ISSlocatorScreen() {
+  const { colors, activeTheme } = useTheme();
   const { telemetry: location, loading, error, isCached, cachedAt, refetch } = useISSTelemetry(7000);
   const [issGpData, setIssGpData] = useState<SatelliteGPData | null>(null);
 
@@ -53,9 +55,9 @@ export default function ISSlocatorScreen() {
           style={styles.background}
           resizeMode="cover"
         >
-          <View style={styles.centerContainer}>
-            <ActivityIndicator size="large" color="#00d4ff" />
-            <Text style={styles.loadingText}>Locating ISS Orbit...</Text>
+          <View style={[styles.centerContainer, { backgroundColor: colors.background + 'C0' }]}>
+            <ActivityIndicator size="large" color={colors.primaryAccent} />
+            <Text style={[styles.loadingText, { color: colors.textPrimary }]}>Locating ISS Orbit...</Text>
           </View>
         </ImageBackground>
       </View>
@@ -70,11 +72,11 @@ export default function ISSlocatorScreen() {
           style={styles.background}
           resizeMode="cover"
         >
-          <View style={styles.centerContainer}>
-            <Text style={styles.errorTitle}>Signal Disrupted</Text>
-            <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={refetch}>
-              <Text style={styles.retryText}>Retry Connection</Text>
+          <View style={[styles.centerContainer, { backgroundColor: colors.background + 'C0' }]}>
+            <Text style={[styles.errorTitle, { color: colors.warning }]}>Signal Disrupted</Text>
+            <Text style={[styles.errorText, { color: colors.textSecondary }]}>{error}</Text>
+            <TouchableOpacity style={[styles.retryButton, { backgroundColor: colors.primaryAccent }]} onPress={refetch}>
+              <Text style={[styles.retryText, { color: '#ffffff' }]}>Retry Connection</Text>
             </TouchableOpacity>
           </View>
         </ImageBackground>
@@ -94,7 +96,7 @@ export default function ISSlocatorScreen() {
           {orbitalState && (
             <MapLibreGL.MapView
               style={styles.mapView}
-              mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+              mapStyle={activeTheme === 'light' ? 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json' : 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'}
               logoEnabled={false}
               attributionEnabled={true}
               attributionPosition={{ bottom: 8, right: 8 }}
@@ -115,7 +117,7 @@ export default function ISSlocatorScreen() {
                   <MapLibreGL.LineLayer
                     id="iss-orbit-line"
                     style={{
-                      lineColor: '#00d4ff',
+                      lineColor: '#5B9CFF',
                       lineWidth: 2.5,
                       lineOpacity: 0.75,
                       lineCap: 'round',
@@ -157,46 +159,94 @@ export default function ISSlocatorScreen() {
         </View>
 
         {/* Telemetry Card (WhereTheISS Live Telemetry) */}
-        <View style={styles.telemetryCard}>
-          <Text style={styles.telemetryTitle}>
+        <View
+          style={[
+            styles.telemetryCard,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.surfaceBorder,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.telemetryTitle,
+              { color: isCached ? colors.warning : colors.primaryAccent },
+            ]}
+          >
             {isCached
               ? formatFreshnessLabel({ source: 'cache', cachedAt, prefix: 'Cached telemetry •' })
               : 'Live Telemetry'}
           </Text>
 
           <View style={styles.telemetryGrid}>
-            <View style={styles.telemetryItem}>
-              <Text style={styles.label}>Latitude</Text>
-              <Text style={styles.value}>
+            <View
+              style={[
+                styles.telemetryItem,
+                {
+                  backgroundColor: colors.raisedSurface,
+                  borderColor: colors.surfaceBorder,
+                },
+              ]}
+            >
+              <Text style={[styles.label, { color: colors.textMuted }]}>Latitude</Text>
+              <Text style={[styles.value, { color: colors.textPrimary }]}>
                 {location ? `${location.latitude.toFixed(4)}°` : '--'}
               </Text>
             </View>
 
-            <View style={styles.telemetryItem}>
-              <Text style={styles.label}>Longitude</Text>
-              <Text style={styles.value}>
+            <View
+              style={[
+                styles.telemetryItem,
+                {
+                  backgroundColor: colors.raisedSurface,
+                  borderColor: colors.surfaceBorder,
+                },
+              ]}
+            >
+              <Text style={[styles.label, { color: colors.textMuted }]}>Longitude</Text>
+              <Text style={[styles.value, { color: colors.textPrimary }]}>
                 {location ? `${location.longitude.toFixed(4)}°` : '--'}
               </Text>
             </View>
 
-            <View style={styles.telemetryItem}>
-              <Text style={styles.label}>Altitude</Text>
-              <Text style={styles.value}>
+            <View
+              style={[
+                styles.telemetryItem,
+                {
+                  backgroundColor: colors.raisedSurface,
+                  borderColor: colors.surfaceBorder,
+                },
+              ]}
+            >
+              <Text style={[styles.label, { color: colors.textMuted }]}>Altitude</Text>
+              <Text style={[styles.value, { color: colors.textPrimary }]}>
                 {location ? `${Math.round(location.altitude)} km` : '--'}
               </Text>
             </View>
 
-            <View style={styles.telemetryItem}>
-              <Text style={styles.label}>Velocity</Text>
-              <Text style={styles.value}>
+            <View
+              style={[
+                styles.telemetryItem,
+                {
+                  backgroundColor: colors.raisedSurface,
+                  borderColor: colors.surfaceBorder,
+                },
+              ]}
+            >
+              <Text style={[styles.label, { color: colors.textMuted }]}>Velocity</Text>
+              <Text style={[styles.value, { color: colors.textPrimary }]}>
                 {location ? `${Math.round(location.velocity).toLocaleString('en-US')} km/h` : '--'}
               </Text>
             </View>
           </View>
 
           {location?.visibility && (
-            <Text style={styles.visibilityText}>
-              Visibility Status: <Text style={styles.highlightText}>{String(location.visibility).toUpperCase()}</Text>
+            <Text style={[styles.visibilityText, { color: colors.textMuted }]}>
+              Visibility Status:{' '}
+              <Text style={[styles.highlightText, { color: colors.primaryAccent }]}>
+                {String(location.visibility).toUpperCase()}
+              </Text>
             </Text>
           )}
         </View>
@@ -208,7 +258,6 @@ export default function ISSlocatorScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0b0d1b',
   },
   background: {
     flex: 1,
@@ -220,34 +269,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: 'rgba(11, 13, 27, 0.75)',
   },
   loadingText: {
-    color: '#00d4ff',
     fontSize: 18,
     fontWeight: 'bold',
     marginTop: 15,
   },
   errorTitle: {
-    color: '#ff4d4d',
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 8,
   },
   errorText: {
-    color: '#ffffff',
     fontSize: 14,
     textAlign: 'center',
     marginBottom: 20,
   },
   retryButton: {
-    backgroundColor: '#00d4ff',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 25,
   },
   retryText: {
-    color: '#0b0d1b',
     fontWeight: 'bold',
     fontSize: 15,
   },
@@ -272,18 +315,14 @@ const styles = StyleSheet.create({
     zIndex: 900,
   },
   arrowSymbol: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 14,
     fontWeight: 'bold',
     lineHeight: 16,
     textAlign: 'center',
-    textShadowColor: 'rgba(0, 212, 255, 0.9)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 5,
   },
   telemetryCard: {
     flex: 0.35,
-    backgroundColor: 'rgba(11, 13, 27, 0.95)',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
@@ -292,17 +331,10 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderLeftWidth: 1,
     borderRightWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.3)',
-    shadowColor: '#00d4ff',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 8,
   },
   telemetryTitle: {
     fontSize: 15,
     fontWeight: 'bold',
-    color: '#00d4ff',
     textAlign: 'center',
     marginBottom: 12,
     letterSpacing: 0.5,
@@ -314,34 +346,28 @@ const styles = StyleSheet.create({
   },
   telemetryItem: {
     width: '48%',
-    backgroundColor: 'rgba(22, 25, 54, 0.85)',
     borderRadius: 12,
     padding: 12,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.2)',
   },
   label: {
     fontSize: 11,
-    color: '#94a3b8',
     textTransform: 'uppercase',
     fontWeight: '600',
     letterSpacing: 0.5,
   },
   value: {
     fontSize: 16,
-    color: '#f8fafc',
     fontWeight: 'bold',
     marginTop: 4,
   },
   visibilityText: {
     fontSize: 12,
-    color: '#94a3b8',
     textAlign: 'center',
     marginTop: 2,
   },
   highlightText: {
-    color: '#00d4ff',
     fontWeight: 'bold',
   },
 });

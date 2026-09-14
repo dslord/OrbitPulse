@@ -11,14 +11,17 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
+import { useTheme } from '../context/ThemeContext';
+import { ThemeMode } from '../theme/theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export default function HomeScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
+  const { themeMode, activeTheme, colors, setThemeMode } = useTheme();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ImageBackground
         source={require('../../assets/bg_image.png')}
         style={styles.background}
@@ -27,26 +30,80 @@ export default function HomeScreen({ navigation }: Props) {
         <ScrollView
           contentContainerStyle={[
             styles.scrollContent,
-            { paddingTop: Math.max(insets.top, 16) + 12 },
+            { paddingTop: Math.max(insets.top, 16) + 8 },
           ]}
         >
-          <View style={styles.headerContainer}>
-            <Text style={styles.titleText}>OrbitPulse</Text>
-            <Text style={styles.subtitleText}>Real-Time ISS & Space Telemetry</Text>
+          {/* TOP BAR WITH THEME SWITCHER */}
+          <View style={styles.topBar}>
+            <View style={styles.headerContainer}>
+              <Text style={[styles.titleText, { color: '#FFFFFF' }]}>OrbitPulse</Text>
+              <Text style={[styles.subtitleText, { color: colors.primaryAccent }]}>
+                Real-Time Space Telemetry
+              </Text>
+            </View>
+
+            {/* COMPACT SEGMENTED THEME SWITCHER */}
+            <View
+              style={[
+                styles.themeSwitcher,
+                {
+                  backgroundColor: colors.raisedSurface,
+                  borderColor: colors.surfaceBorder,
+                },
+              ]}
+            >
+              {(['system', 'light', 'dark'] as ThemeMode[]).map((mode) => {
+                const isActive = themeMode === mode;
+                const label = mode === 'system' ? 'Sys' : mode === 'light' ? 'Light' : 'Dark';
+                return (
+                  <TouchableOpacity
+                    key={mode}
+                    onPress={() => setThemeMode(mode)}
+                    activeOpacity={0.7}
+                    style={[
+                      styles.themeTab,
+                      isActive && {
+                        backgroundColor: colors.selectedSurface,
+                        borderColor: colors.selectedIndicator,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.themeTabText,
+                        { color: isActive ? colors.selectedText : colors.textMuted },
+                      ]}
+                    >
+                      {label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </View>
 
           {/* Option 1: Space Agencies */}
           <TouchableOpacity
-            style={styles.routeCard}
+            style={[
+              styles.routeCard,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.surfaceBorder,
+              },
+            ]}
             activeOpacity={0.8}
             onPress={() => navigation.navigate('SpaceAgencies')}
           >
             <View style={styles.cardTextContainer}>
-              <Text style={styles.routeTitle}>Space Agencies</Text>
-              <Text style={styles.routeSubtitle}>Global Space Organizations Directory</Text>
-              <Text style={styles.knowMoreText}>Explore Directory &rarr;</Text>
+              <Text style={[styles.routeTitle, { color: colors.textPrimary }]}>Space Agencies</Text>
+              <Text style={[styles.routeSubtitle, { color: colors.textMuted }]}>
+                Global Space Organizations Directory
+              </Text>
+              <Text style={[styles.knowMoreText, { color: colors.primaryAccent }]}>
+                Explore Directory &rarr;
+              </Text>
             </View>
-            <Text style={styles.numberBadge}>1</Text>
+            <Text style={[styles.numberBadge, { color: activeTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)' }]}>1</Text>
             <Image
               source={require('../../assets/space_agencies.png')}
               style={styles.cardIconRocket}
@@ -55,16 +112,26 @@ export default function HomeScreen({ navigation }: Props) {
 
           {/* Option 2: Mission Explorer */}
           <TouchableOpacity
-            style={styles.routeCard}
+            style={[
+              styles.routeCard,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.surfaceBorder,
+              },
+            ]}
             activeOpacity={0.8}
             onPress={() => navigation.navigate('MissionExplorer')}
           >
             <View style={styles.cardTextContainer}>
-              <Text style={styles.routeTitle}>Mission Explorer</Text>
-              <Text style={styles.routeSubtitle}>Browse Deep Space & Lunar Probes</Text>
-              <Text style={styles.knowMoreText}>Explore Missions &rarr;</Text>
+              <Text style={[styles.routeTitle, { color: colors.textPrimary }]}>Mission Explorer</Text>
+              <Text style={[styles.routeSubtitle, { color: colors.textMuted }]}>
+                Browse Deep Space & Lunar Probes
+              </Text>
+              <Text style={[styles.knowMoreText, { color: colors.primaryAccent }]}>
+                Explore Missions &rarr;
+              </Text>
             </View>
-            <Text style={styles.numberBadge}>2</Text>
+            <Text style={[styles.numberBadge, { color: activeTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)' }]}>2</Text>
             <Image
               source={require('../../assets/mission_explorer.png')}
               style={styles.cardIconRocket}
@@ -73,16 +140,26 @@ export default function HomeScreen({ navigation }: Props) {
 
           {/* Option 3: Today in Space */}
           <TouchableOpacity
-            style={styles.routeCard}
+            style={[
+              styles.routeCard,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.surfaceBorder,
+              },
+            ]}
             activeOpacity={0.8}
             onPress={() => navigation.navigate('TodayInSpace')}
           >
             <View style={styles.cardTextContainer}>
-              <Text style={styles.routeTitle}>Today in Space</Text>
-              <Text style={styles.routeSubtitle}>Daily Missions, ISS & News Snapshot</Text>
-              <Text style={styles.knowMoreText}>Open Dashboard &rarr;</Text>
+              <Text style={[styles.routeTitle, { color: colors.textPrimary }]}>Today in Space</Text>
+              <Text style={[styles.routeSubtitle, { color: colors.textMuted }]}>
+                Daily Missions, ISS & News Snapshot
+              </Text>
+              <Text style={[styles.knowMoreText, { color: colors.primaryAccent }]}>
+                Open Dashboard &rarr;
+              </Text>
             </View>
-            <Text style={styles.numberBadge}>3</Text>
+            <Text style={[styles.numberBadge, { color: activeTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)' }]}>3</Text>
             <Image
               source={require('../../assets/today_in_space.png')}
               style={styles.cardIconRocket}
@@ -91,16 +168,26 @@ export default function HomeScreen({ navigation }: Props) {
 
           {/* Option 4: ISS Location */}
           <TouchableOpacity
-            style={styles.routeCard}
+            style={[
+              styles.routeCard,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.surfaceBorder,
+              },
+            ]}
             activeOpacity={0.8}
             onPress={() => navigation.navigate('ISSlocator')}
           >
             <View style={styles.cardTextContainer}>
-              <Text style={styles.routeTitle}>ISS Location</Text>
-              <Text style={styles.routeSubtitle}>Live Satellite Tracking</Text>
-              <Text style={styles.knowMoreText}>Explore Map &rarr;</Text>
+              <Text style={[styles.routeTitle, { color: colors.textPrimary }]}>ISS Location</Text>
+              <Text style={[styles.routeSubtitle, { color: colors.textMuted }]}>
+                Live Satellite Tracking
+              </Text>
+              <Text style={[styles.knowMoreText, { color: colors.primaryAccent }]}>
+                Explore Map &rarr;
+              </Text>
             </View>
-            <Text style={styles.numberBadge}>4</Text>
+            <Text style={[styles.numberBadge, { color: activeTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)' }]}>4</Text>
             <Image
               source={require('../../assets/iss_location.png')}
               style={styles.cardIconIss}
@@ -109,16 +196,26 @@ export default function HomeScreen({ navigation }: Props) {
 
           {/* Option 5: ISS Next-Pass */}
           <TouchableOpacity
-            style={styles.routeCard}
+            style={[
+              styles.routeCard,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.surfaceBorder,
+              },
+            ]}
             activeOpacity={0.8}
             onPress={() => navigation.navigate('ISSPass')}
           >
             <View style={styles.cardTextContainer}>
-              <Text style={styles.routeTitle}>ISS Next-Pass</Text>
-              <Text style={styles.routeSubtitle}>Pass Times & Horizon Visibility</Text>
-              <Text style={styles.knowMoreText}>Calculate Pass &rarr;</Text>
+              <Text style={[styles.routeTitle, { color: colors.textPrimary }]}>ISS Next-Pass</Text>
+              <Text style={[styles.routeSubtitle, { color: colors.textMuted }]}>
+                Pass Times & Horizon Visibility
+              </Text>
+              <Text style={[styles.knowMoreText, { color: colors.primaryAccent }]}>
+                Calculate Pass &rarr;
+              </Text>
             </View>
-            <Text style={styles.numberBadge}>5</Text>
+            <Text style={[styles.numberBadge, { color: activeTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)' }]}>5</Text>
             <Image
               source={require('../../assets/next_pass.png')}
               style={styles.cardIconPass}
@@ -127,16 +224,26 @@ export default function HomeScreen({ navigation }: Props) {
 
           {/* Option 6: Spacecraft Tracker */}
           <TouchableOpacity
-            style={styles.routeCard}
+            style={[
+              styles.routeCard,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.surfaceBorder,
+              },
+            ]}
             activeOpacity={0.8}
             onPress={() => navigation.navigate('SpacecraftTracker')}
           >
             <View style={styles.cardTextContainer}>
-              <Text style={styles.routeTitle}>Spacecraft Tracker</Text>
-              <Text style={styles.routeSubtitle}>Deep Space Probes & Telemetry</Text>
-              <Text style={styles.knowMoreText}>Track Spacecraft &rarr;</Text>
+              <Text style={[styles.routeTitle, { color: colors.textPrimary }]}>Spacecraft Tracker</Text>
+              <Text style={[styles.routeSubtitle, { color: colors.textMuted }]}>
+                Deep Space Probes & Telemetry
+              </Text>
+              <Text style={[styles.knowMoreText, { color: colors.primaryAccent }]}>
+                Track Spacecraft &rarr;
+              </Text>
             </View>
-            <Text style={styles.numberBadge}>6</Text>
+            <Text style={[styles.numberBadge, { color: activeTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)' }]}>6</Text>
             <Image
               source={require('../../assets/spacecraft_tracker.png')}
               style={styles.cardIconRocket}
@@ -145,16 +252,26 @@ export default function HomeScreen({ navigation }: Props) {
 
           {/* Option 7: Launch Tracker */}
           <TouchableOpacity
-            style={styles.routeCard}
+            style={[
+              styles.routeCard,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.surfaceBorder,
+              },
+            ]}
             activeOpacity={0.8}
             onPress={() => navigation.navigate('LaunchTracker')}
           >
             <View style={styles.cardTextContainer}>
-              <Text style={styles.routeTitle}>Launch Tracker</Text>
-              <Text style={styles.routeSubtitle}>Live Space Missions & Schedules</Text>
-              <Text style={styles.knowMoreText}>View Launches &rarr;</Text>
+              <Text style={[styles.routeTitle, { color: colors.textPrimary }]}>Launch Tracker</Text>
+              <Text style={[styles.routeSubtitle, { color: colors.textMuted }]}>
+                Live Space Missions & Schedules
+              </Text>
+              <Text style={[styles.knowMoreText, { color: colors.primaryAccent }]}>
+                View Launches &rarr;
+              </Text>
             </View>
-            <Text style={styles.numberBadge}>7</Text>
+            <Text style={[styles.numberBadge, { color: activeTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)' }]}>7</Text>
             <Image
               source={require('../../assets/launch_icon.png')}
               style={styles.cardIconLaunch}
@@ -163,34 +280,54 @@ export default function HomeScreen({ navigation }: Props) {
 
           {/* Option 8: Satellite Explorer */}
           <TouchableOpacity
-            style={styles.routeCard}
+            style={[
+              styles.routeCard,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.surfaceBorder,
+              },
+            ]}
             activeOpacity={0.8}
             onPress={() => navigation.navigate('SatelliteExplorer')}
           >
             <View style={styles.cardTextContainer}>
-              <Text style={styles.routeTitle}>Satellite Explorer</Text>
-              <Text style={styles.routeSubtitle}>Browse & Track Satellites</Text>
-              <Text style={styles.knowMoreText}>Explore Satellites &rarr;</Text>
+              <Text style={[styles.routeTitle, { color: colors.textPrimary }]}>Satellite Explorer</Text>
+              <Text style={[styles.routeSubtitle, { color: colors.textMuted }]}>
+                Browse & Track Satellites
+              </Text>
+              <Text style={[styles.knowMoreText, { color: colors.primaryAccent }]}>
+                Explore Satellites &rarr;
+              </Text>
             </View>
-            <Text style={styles.numberBadge}>8</Text>
+            <Text style={[styles.numberBadge, { color: activeTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)' }]}>8</Text>
             <Image
               source={require('../../assets/satellite_explorer.png')}
               style={styles.cardIconRocket}
             />
           </TouchableOpacity>
 
-          {/* Option 9: Meteor Threat Feed */}
+          {/* Option 9: Meteor Feed */}
           <TouchableOpacity
-            style={styles.routeCard}
+            style={[
+              styles.routeCard,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.surfaceBorder,
+              },
+            ]}
             activeOpacity={0.8}
             onPress={() => navigation.navigate('Meteor')}
           >
             <View style={styles.cardTextContainer}>
-              <Text style={styles.routeTitle}>Meteor Feed</Text>
-              <Text style={styles.routeSubtitle}>NASA Near-Earth Objects</Text>
-              <Text style={styles.knowMoreText}>Analyze Threats &rarr;</Text>
+              <Text style={[styles.routeTitle, { color: colors.textPrimary }]}>Meteor Feed</Text>
+              <Text style={[styles.routeSubtitle, { color: colors.textMuted }]}>
+                NASA Near-Earth Objects
+              </Text>
+              <Text style={[styles.knowMoreText, { color: colors.primaryAccent }]}>
+                Analyze Threats &rarr;
+              </Text>
             </View>
-            <Text style={styles.numberBadge}>9</Text>
+            <Text style={[styles.numberBadge, { color: activeTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)' }]}>9</Text>
             <Image
               source={require('../../assets/meteor_feed.png')}
               style={styles.cardIconMeteor}
@@ -199,16 +336,26 @@ export default function HomeScreen({ navigation }: Props) {
 
           {/* Option 10: Space Updates */}
           <TouchableOpacity
-            style={styles.routeCard}
+            style={[
+              styles.routeCard,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.surfaceBorder,
+              },
+            ]}
             activeOpacity={0.8}
             onPress={() => navigation.navigate('Updates')}
           >
             <View style={styles.cardTextContainer}>
-              <Text style={styles.routeTitle}>Space Updates</Text>
-              <Text style={styles.routeSubtitle}>Live Telemetry & News</Text>
-              <Text style={styles.knowMoreText}>Read Updates &rarr;</Text>
+              <Text style={[styles.routeTitle, { color: colors.textPrimary }]}>Space Updates</Text>
+              <Text style={[styles.routeSubtitle, { color: colors.textMuted }]}>
+                Live Telemetry & News
+              </Text>
+              <Text style={[styles.knowMoreText, { color: colors.primaryAccent }]}>
+                Read Updates &rarr;
+              </Text>
             </View>
-            <Text style={styles.numberBadge}>10</Text>
+            <Text style={[styles.numberBadge, { color: activeTheme === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)' }]}>10</Text>
             <Image
               source={require('../../assets/space_updates.png')}
               style={styles.cardIconRocket}
@@ -223,7 +370,6 @@ export default function HomeScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0b0d1b',
   },
   background: {
     flex: 1,
@@ -231,129 +377,135 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   scrollContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingBottom: 40,
     alignItems: 'stretch',
   },
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+  },
   headerContainer: {
-    marginTop: 4,
-    marginBottom: 24,
-    alignItems: 'center',
+    flex: 1,
   },
   titleText: {
-    fontSize: 34,
-    color: '#ffffff',
+    fontSize: 28,
     fontWeight: '900',
-    textAlign: 'center',
-    letterSpacing: 1.5,
-    textShadowColor: 'rgba(0, 212, 255, 0.5)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 8,
+    letterSpacing: 1,
   },
   subtitleText: {
-    fontSize: 13,
-    color: '#00d4ff',
-    fontWeight: '600',
-    marginTop: 4,
-    letterSpacing: 1,
+    fontSize: 11,
+    fontWeight: '700',
+    marginTop: 2,
+    letterSpacing: 0.8,
     textTransform: 'uppercase',
   },
+  themeSwitcher: {
+    flexDirection: 'row',
+    borderRadius: 10,
+    padding: 3,
+    borderWidth: 1,
+    marginLeft: 10,
+    marginTop: 2,
+  },
+  themeTab: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 7,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  themeTabText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
   routeCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 18,
-    padding: 18,
-    marginBottom: 20,
-    minHeight: 135,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    minHeight: 125,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     overflow: 'visible',
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.25)',
-    shadowColor: '#00d4ff',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 4,
     position: 'relative',
   },
   cardTextContainer: {
     flex: 1,
-    paddingRight: 64,
+    paddingRight: 60,
     zIndex: 2,
   },
   routeTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#0b0d1b',
     letterSpacing: 0.3,
   },
   routeSubtitle: {
-    fontSize: 13,
-    color: '#475569',
+    fontSize: 12,
     marginTop: 4,
     fontWeight: '500',
-    lineHeight: 18,
+    lineHeight: 16,
   },
   knowMoreText: {
-    marginTop: 14,
-    fontSize: 13,
-    color: '#dc2626',
+    marginTop: 12,
+    fontSize: 12,
     fontWeight: 'bold',
     letterSpacing: 0.3,
   },
   numberBadge: {
-    fontSize: 54,
-    color: 'rgba(0, 0, 0, 0.07)',
+    fontSize: 50,
     fontWeight: '900',
     position: 'absolute',
-    right: 14,
-    bottom: 4,
+    right: 12,
+    bottom: 2,
     zIndex: 1,
   },
   cardIconIss: {
     resizeMode: 'contain',
-    height: 90,
-    width: 90,
+    height: 85,
+    width: 85,
     position: 'absolute',
-    right: 10,
-    top: -24,
+    right: 8,
+    top: -20,
     zIndex: 3,
   },
   cardIconMeteor: {
+    resizeMode: 'contain',
+    height: 100,
+    width: 100,
+    position: 'absolute',
+    right: 0,
+    top: -24,
+    zIndex: 3,
+  },
+  cardIconRocket: {
+    resizeMode: 'contain',
+    height: 90,
+    width: 90,
+    position: 'absolute',
+    right: 5,
+    top: -20,
+    zIndex: 3,
+  },
+  cardIconLaunch: {
     resizeMode: 'contain',
     height: 110,
     width: 110,
     position: 'absolute',
     right: 0,
-    top: -28,
-    zIndex: 3,
-  },
-  cardIconRocket: {
-    resizeMode: 'contain',
-    height: 100,
-    width: 100,
-    position: 'absolute',
-    right: 5,
     top: -24,
-    zIndex: 3,
-  },
-  cardIconLaunch: {
-    resizeMode: 'contain',
-    height: 120,
-    width: 120,
-    position: 'absolute',
-    right: 0,
-    top: -28,
     zIndex: 3,
   },
   cardIconPass: {
     resizeMode: 'contain',
-    height: 115,
-    width: 115,
+    height: 105,
+    width: 105,
     position: 'absolute',
     right: 0,
-    top: -24,
+    top: -20,
     zIndex: 3,
   },
 });

@@ -16,10 +16,12 @@ import { fetchMeteorFeedWithMeta } from '../services/nasaNeoService';
 import { MeteorObject, RootStackParamList } from '../types';
 import { getCleanErrorMessage } from '../utils/errorUtils';
 import { formatFreshnessLabel } from '../utils/timeUtils';
+import { useTheme } from '../context/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Meteor'>;
 
 export default function MeteorScreen({ navigation }: Props) {
+  const { colors, activeTheme } = useTheme();
   const [meteors, setMeteors] = useState<MeteorObject[]>([]);
   const [source, setSource] = useState<'live' | 'cache'>('live');
   const [cachedAt, setCachedAt] = useState<number | null>(null);
@@ -119,32 +121,32 @@ export default function MeteorScreen({ navigation }: Props) {
 
           <Image source={speedImg} style={[styles.speedGif, { width: speedSize, height: speedSize }]} />
 
-          <View style={styles.cardBody}>
-            <Text style={styles.meteorTitle} numberOfLines={1}>
+          <View style={[styles.cardBody, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+            <Text style={[styles.meteorTitle, { color: colors.primaryAccent }]} numberOfLines={1}>
               {item.name}
             </Text>
 
             <View style={styles.dataRow}>
-              <Text style={styles.dataLabel}>Closest Approach:</Text>
-              <Text style={styles.dataValue}>{approachDate}</Text>
+              <Text style={[styles.dataLabel, { color: colors.textMuted }]}>Closest Approach:</Text>
+              <Text style={[styles.dataValue, { color: colors.textPrimary }]}>{approachDate}</Text>
             </View>
 
             <View style={styles.dataRow}>
-              <Text style={styles.dataLabel}>Diameter Range:</Text>
-              <Text style={styles.dataValue}>{minDia} - {maxDia} km</Text>
+              <Text style={[styles.dataLabel, { color: colors.textMuted }]}>Diameter Range:</Text>
+              <Text style={[styles.dataValue, { color: colors.textPrimary }]}>{minDia} - {maxDia} km</Text>
             </View>
 
             <View style={styles.dataRow}>
-              <Text style={styles.dataLabel}>Miss Distance:</Text>
-              <Text style={styles.dataValue}>{missKm} km</Text>
+              <Text style={[styles.dataLabel, { color: colors.textMuted }]}>Miss Distance:</Text>
+              <Text style={[styles.dataValue, { color: colors.textPrimary }]}>{missKm} km</Text>
             </View>
 
             <View style={styles.dataRow}>
-              <Text style={styles.dataLabel}>Velocity:</Text>
-              <Text style={styles.dataValue}>{velocityKmH} km/h</Text>
+              <Text style={[styles.dataLabel, { color: colors.textMuted }]}>Velocity:</Text>
+              <Text style={[styles.dataValue, { color: colors.textPrimary }]}>{velocityKmH} km/h</Text>
             </View>
 
-            <Text style={styles.viewDetailsText}>Tap for Trajectory Radar & Orbit Details &rarr;</Text>
+            <Text style={[styles.viewDetailsText, { color: colors.primaryAccent }]}>Tap for Trajectory Radar & Orbit Details &rarr;</Text>
           </View>
         </ImageBackground>
       </TouchableOpacity>
@@ -155,9 +157,9 @@ export default function MeteorScreen({ navigation }: Props) {
     return (
       <View style={styles.container}>
         <ImageBackground source={require('../../assets/meteor_bg.jpg')} style={styles.background}>
-          <View style={styles.centerContainer}>
-            <ActivityIndicator size="large" color="#00d4ff" />
-            <Text style={styles.loadingText}>Fetching NASA Near-Earth Objects...</Text>
+          <View style={[styles.centerContainer, { backgroundColor: colors.overlay }]}>
+            <ActivityIndicator size="large" color={colors.primaryAccent} />
+            <Text style={[styles.loadingText, { color: colors.primaryAccent }]}>Fetching NASA Near-Earth Objects...</Text>
           </View>
         </ImageBackground>
       </View>
@@ -168,11 +170,11 @@ export default function MeteorScreen({ navigation }: Props) {
     return (
       <View style={styles.container}>
         <ImageBackground source={require('../../assets/meteor_bg.jpg')} style={styles.background}>
-          <View style={styles.centerContainer}>
-            <Text style={styles.errorTitle}>Telemetry Offline</Text>
-            <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={getMeteors}>
-              <Text style={styles.retryText}>Retry Feed</Text>
+          <View style={[styles.centerContainer, { backgroundColor: colors.overlay }]}>
+            <Text style={[styles.errorTitle, { color: colors.critical }]}>Telemetry Offline</Text>
+            <Text style={[styles.errorText, { color: colors.textSecondary }]}>{error}</Text>
+            <TouchableOpacity style={[styles.retryButton, { backgroundColor: colors.primaryAccent }]} onPress={getMeteors}>
+              <Text style={[styles.retryText, { color: colors.background }]}>Retry Feed</Text>
             </TouchableOpacity>
           </View>
         </ImageBackground>
@@ -184,15 +186,15 @@ export default function MeteorScreen({ navigation }: Props) {
     <View style={styles.container}>
       <ImageBackground source={require('../../assets/meteor_bg.jpg')} style={styles.background}>
         <View style={styles.titleContainer}>
-          <Text style={styles.screenTitle}>Near-Earth Object Radar</Text>
-          <Text style={styles.screenSubtitle}>
+          <Text style={[styles.screenTitle, { color: colors.textPrimary }]}>Near-Earth Object Radar</Text>
+          <Text style={[styles.screenSubtitle, { color: colors.primaryAccent }]}>
             NASA NEO Threat Analysis • {formatFreshnessLabel({ source, cachedAt, lastUpdated, prefix: 'Updated' })}
           </Text>
         </View>
 
         {meteors.length === 0 ? (
-          <View style={styles.centerContainer}>
-            <Text style={styles.errorText}>No meteor approaches recorded for this period.</Text>
+          <View style={[styles.centerContainer, { backgroundColor: colors.overlay }]}>
+            <Text style={[styles.errorText, { color: colors.textMuted }]}>No meteor approaches recorded for this period.</Text>
           </View>
         ) : (
           <FlatList
@@ -205,8 +207,8 @@ export default function MeteorScreen({ navigation }: Props) {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                tintColor="#00d4ff"
-                colors={['#00d4ff']}
+                tintColor={colors.primaryAccent}
+                colors={[colors.primaryAccent]}
               />
             }
           />
@@ -239,7 +241,7 @@ const styles = StyleSheet.create({
   },
   screenSubtitle: {
     fontSize: 12,
-    color: '#00d4ff',
+    color: '#5B9CFF',
     marginTop: 3,
   },
   centerContainer: {
@@ -250,7 +252,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(11, 13, 27, 0.7)',
   },
   loadingText: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 16,
     fontWeight: 'bold',
     marginTop: 12,
@@ -268,7 +270,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: '#00d4ff',
+    backgroundColor: '#5B9CFF',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 20,
@@ -325,12 +327,12 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.2)',
+    borderColor: 'rgba(91, 156, 255, 0.2)',
   },
   meteorTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#00d4ff',
+    color: '#5B9CFF',
     marginBottom: 10,
     textAlign: 'center',
   },
@@ -350,7 +352,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   viewDetailsText: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 11,
     fontWeight: 'bold',
     marginTop: 8,

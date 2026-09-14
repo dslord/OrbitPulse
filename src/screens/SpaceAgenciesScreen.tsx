@@ -12,10 +12,12 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { SPACE_AGENCIES, SpaceAgency } from '../data/spaceAgenciesData';
+import { useTheme } from '../context/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SpaceAgencies'>;
 
 export default function SpaceAgenciesScreen({ navigation }: Props) {
+  const { colors, activeTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -53,19 +55,19 @@ export default function SpaceAgenciesScreen({ navigation }: Props) {
           keyboardShouldPersistTaps="handled"
         >
           {/* HEADER CARD */}
-          <View style={styles.headerCard}>
-            <Text style={styles.headerTitle}>GLOBAL SPACE AGENCIES</Text>
-            <Text style={styles.headerSubtitle}>
+          <View style={[styles.headerCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+            <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>GLOBAL SPACE AGENCIES</Text>
+            <Text style={[styles.headerSubtitle, { color: colors.primaryAccent }]}>
               Curated Directory of Real-World Civil Space & Research Organizations
             </Text>
           </View>
 
           {/* SEARCH INPUT BAR */}
-          <View style={styles.searchContainer}>
+          <View style={[styles.searchContainer, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
             <TextInput
-              style={styles.searchInput}
+              style={[styles.searchInput, { color: colors.textPrimary }]}
               placeholder="Search agency name, abbreviation, or country..."
-              placeholderTextColor="#64748b"
+              placeholderTextColor={colors.textMuted}
               value={searchQuery}
               onChangeText={setSearchQuery}
               autoCapitalize="none"
@@ -73,16 +75,16 @@ export default function SpaceAgenciesScreen({ navigation }: Props) {
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
-                <Text style={styles.clearText}>Clear</Text>
+                <Text style={[styles.clearText, { color: colors.textMuted }]}>Clear</Text>
               </TouchableOpacity>
             )}
           </View>
 
           {/* AGENCY CARDS LIST */}
           {filteredAgencies.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyTitle}>No Agencies Found</Text>
-              <Text style={styles.emptyText}>
+            <View style={[styles.emptyContainer, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+              <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No Agencies Found</Text>
+              <Text style={[styles.emptyText, { color: colors.textMuted }]}>
                 No space agencies match "{searchQuery}". Try searching for another agency name or country.
               </Text>
             </View>
@@ -91,7 +93,7 @@ export default function SpaceAgenciesScreen({ navigation }: Props) {
               const isExpanded = expandedId === agency.id;
 
               return (
-                <View key={agency.id} style={styles.agencyCard}>
+                <View key={agency.id} style={[styles.agencyCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
                   <TouchableOpacity
                     activeOpacity={0.8}
                     onPress={() => toggleExpand(agency.id)}
@@ -102,42 +104,42 @@ export default function SpaceAgenciesScreen({ navigation }: Props) {
                     </View>
 
                     <View style={styles.agencyHeaderContent}>
-                      <Text style={styles.agencyAbbrev}>{agency.abbreviation}</Text>
-                      <Text style={styles.agencyFullName} numberOfLines={2}>
+                      <Text style={[styles.agencyAbbrev, { color: colors.textPrimary }]}>{agency.abbreviation}</Text>
+                      <Text style={[styles.agencyFullName, { color: colors.textMuted }]} numberOfLines={2}>
                         {agency.name}
                       </Text>
-                      <Text style={styles.agencyCountry}>{agency.countryOrRegion}</Text>
+                      <Text style={[styles.agencyCountry, { color: colors.primaryAccent }]}>{agency.countryOrRegion}</Text>
                     </View>
 
-                    <Text style={styles.expandToggleText}>
+                    <Text style={[styles.expandToggleText, { color: colors.primaryAccent }]}>
                       {isExpanded ? 'Hide ▲' : 'Details ▼'}
                     </Text>
                   </TouchableOpacity>
 
                   {/* EXPANDABLE DETAILS */}
                   {isExpanded && (
-                    <View style={styles.detailsContainer}>
+                    <View style={[styles.detailsContainer, { borderTopColor: colors.surfaceBorder }]}>
                       <View style={styles.metaRow}>
-                        <View style={styles.metaBadge}>
-                          <Text style={styles.metaLabel}>Est. Year</Text>
-                          <Text style={styles.metaValue}>{agency.establishedYear}</Text>
+                        <View style={[styles.metaBadge, { backgroundColor: colors.raisedSurface }]}>
+                          <Text style={[styles.metaLabel, { color: colors.textMuted }]}>Est. Year</Text>
+                          <Text style={[styles.metaValue, { color: colors.textPrimary }]}>{agency.establishedYear}</Text>
                         </View>
-                        <View style={[styles.metaBadge, styles.metaBadgeFlex]}>
-                          <Text style={styles.metaLabel}>Headquarters</Text>
-                          <Text style={styles.metaValue} numberOfLines={1}>
+                        <View style={[styles.metaBadge, styles.metaBadgeFlex, { backgroundColor: colors.raisedSurface }]}>
+                          <Text style={[styles.metaLabel, { color: colors.textMuted }]}>Headquarters</Text>
+                          <Text style={[styles.metaValue, { color: colors.textPrimary }]} numberOfLines={1}>
                             {agency.headquarters}
                           </Text>
                         </View>
                       </View>
 
-                      <Text style={styles.descriptionText}>{agency.description}</Text>
+                      <Text style={[styles.descriptionText, { color: colors.textSecondary }]}>{agency.description}</Text>
 
                       <TouchableOpacity
-                        style={[styles.websiteButton, { borderColor: agency.badgeColor }]}
+                        style={[styles.websiteButton, { borderColor: agency.badgeColor, backgroundColor: colors.surface }]}
                         activeOpacity={0.8}
                         onPress={() => handleOpenWebsite(agency.websiteUrl)}
                       >
-                        <Text style={styles.websiteButtonText}>
+                        <Text style={[styles.websiteButtonText, { color: colors.primaryAccent }]}>
                           Visit Official Website &rarr;
                         </Text>
                       </TouchableOpacity>
@@ -182,7 +184,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   headerSubtitle: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 12,
     marginTop: 4,
   },
@@ -194,7 +196,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.2)',
+    borderColor: 'rgba(91, 156, 255, 0.2)',
   },
   searchInput: {
     flex: 1,
@@ -217,7 +219,7 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.18)',
+    borderColor: 'rgba(91, 156, 255, 0.18)',
   },
   emptyTitle: {
     color: '#f8fafc',
@@ -236,7 +238,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.18)',
+    borderColor: 'rgba(91, 156, 255, 0.18)',
   },
   cardHeaderRow: {
     flexDirection: 'row',
@@ -262,7 +264,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   agencyAbbrev: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 14,
     fontWeight: 'bold',
   },
@@ -279,7 +281,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   expandToggleText: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 11,
     fontWeight: '700',
   },
@@ -300,7 +302,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginRight: 10,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.15)',
+    borderColor: 'rgba(91, 156, 255, 0.15)',
   },
   metaBadgeFlex: {
     flex: 1,
@@ -332,7 +334,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   websiteButtonText: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 12,
     fontWeight: 'bold',
   },

@@ -16,8 +16,10 @@ import { fetchSpaceNewsWithMeta } from '../services/spaceNewsService';
 import { SpaceNewsArticle } from '../types';
 import { getCleanErrorMessage } from '../utils/errorUtils';
 import { formatRelativeTime, formatFreshnessLabel } from '../utils/timeUtils';
+import { useTheme } from '../context/ThemeContext';
 
 export default function SpaceNewsScreen() {
+  const { colors, activeTheme } = useTheme();
   const [articles, setArticles] = useState<SpaceNewsArticle[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -83,29 +85,29 @@ export default function SpaceNewsScreen() {
 
   const renderArticleCard = ({ item }: ListRenderItemInfo<SpaceNewsArticle>) => (
     <TouchableOpacity
-      style={styles.newsCard}
+      style={[styles.newsCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder, borderWidth: 1 }]}
       activeOpacity={0.85}
       onPress={() => handleOpenArticle(item.url)}
     >
       {item.image_url ? (
         <Image
           source={{ uri: item.image_url }}
-          style={styles.newsThumbnail}
+          style={[styles.newsThumbnail, { backgroundColor: colors.raisedSurface }]}
           resizeMode="cover"
         />
       ) : null}
       <View style={styles.newsCardContent}>
         <View style={styles.newsHeader}>
-          <Text style={styles.newsSource} numberOfLines={1}>
+          <Text style={[styles.newsSource, { color: colors.primaryAccent }]} numberOfLines={1}>
             {item.news_site || 'Space News'} • {formatDate(item.published_at)}
           </Text>
-          <Text style={styles.newsReadMore}>Read &rarr;</Text>
+          <Text style={[styles.newsReadMore, { color: colors.primaryAccent }]}>Read &rarr;</Text>
         </View>
-        <Text style={styles.newsTitle} numberOfLines={2}>
+        <Text style={[styles.newsTitle, { color: colors.textPrimary }]} numberOfLines={2}>
           {item.title}
         </Text>
         {item.summary ? (
-          <Text style={styles.newsSummary} numberOfLines={3}>
+          <Text style={[styles.newsSummary, { color: colors.textSecondary }]} numberOfLines={3}>
             {item.summary}
           </Text>
         ) : null}
@@ -124,14 +126,17 @@ export default function SpaceNewsScreen() {
           <TouchableOpacity
             style={[
               styles.filterTab,
-              activeFilter === 'all' && styles.filterTabActive,
+              {
+                backgroundColor: activeFilter === 'all' ? colors.selectedSurface : colors.surface,
+                borderColor: activeFilter === 'all' ? colors.selectedIndicator : colors.surfaceBorder,
+              },
             ]}
             onPress={() => setActiveFilter('all')}
           >
             <Text
               style={[
                 styles.filterText,
-                activeFilter === 'all' && styles.filterTextActive,
+                { color: activeFilter === 'all' ? colors.selectedText : colors.textMuted },
               ]}
             >
               Global Space News
@@ -141,14 +146,17 @@ export default function SpaceNewsScreen() {
           <TouchableOpacity
             style={[
               styles.filterTab,
-              activeFilter === 'isro' && styles.filterTabActive,
+              {
+                backgroundColor: activeFilter === 'isro' ? colors.selectedSurface : colors.surface,
+                borderColor: activeFilter === 'isro' ? colors.selectedIndicator : colors.surfaceBorder,
+              },
             ]}
             onPress={() => setActiveFilter('isro')}
           >
             <Text
               style={[
                 styles.filterText,
-                activeFilter === 'isro' && styles.filterTextActive,
+                { color: activeFilter === 'isro' ? colors.selectedText : colors.textMuted },
               ]}
             >
               ISRO & India Focus
@@ -158,33 +166,33 @@ export default function SpaceNewsScreen() {
 
         {loading && !refreshing ? (
           <View style={styles.centerContainer}>
-            <ActivityIndicator size="large" color="#00d4ff" />
-            <Text style={styles.loadingText}>Fetching Spaceflight Telemetry & News...</Text>
+            <ActivityIndicator size="large" color={colors.primaryAccent} />
+            <Text style={[styles.loadingText, { color: colors.primaryAccent }]}>Fetching Spaceflight Telemetry & News...</Text>
           </View>
         ) : error ? (
           <View style={styles.centerContainer}>
-            <Text style={styles.errorTitle}>Feed Offline</Text>
-            <Text style={styles.errorText}>{error}</Text>
+            <Text style={[styles.errorTitle, { color: colors.critical }]}>Feed Offline</Text>
+            <Text style={[styles.errorText, { color: colors.textSecondary }]}>{error}</Text>
             <TouchableOpacity
-              style={styles.retryButton}
+              style={[styles.retryButton, { backgroundColor: colors.primaryAccent }]}
               onPress={() => loadArticles(activeFilter)}
             >
-              <Text style={styles.retryText}>Retry Feed</Text>
+              <Text style={[styles.retryText, { color: colors.background }]}>Retry Feed</Text>
             </TouchableOpacity>
           </View>
         ) : articles.length === 0 ? (
           <View style={styles.centerContainer}>
-            <Text style={styles.errorTitle}>No Reports Found</Text>
-            <Text style={styles.errorText}>
+            <Text style={[styles.errorTitle, { color: colors.textPrimary }]}>No Reports Found</Text>
+            <Text style={[styles.errorText, { color: colors.textMuted }]}>
               {activeFilter === 'isro'
                 ? 'No recent ISRO/India space reports found in current live feed.'
                 : 'No spaceflight news reports currently available.'}
             </Text>
             <TouchableOpacity
-              style={styles.retryButton}
+              style={[styles.retryButton, { backgroundColor: colors.primaryAccent }]}
               onPress={() => loadArticles(activeFilter)}
             >
-              <Text style={styles.retryText}>Refresh Feed</Text>
+              <Text style={[styles.retryText, { color: colors.background }]}>Refresh Feed</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -197,8 +205,8 @@ export default function SpaceNewsScreen() {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                tintColor="#00d4ff"
-                colors={['#00d4ff']}
+                tintColor={colors.primaryAccent}
+                colors={[colors.primaryAccent]}
               />
             }
           />
@@ -235,8 +243,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 212, 255, 0.2)',
   },
   filterTabActive: {
-    backgroundColor: '#00d4ff',
-    borderColor: '#00d4ff',
+    backgroundColor: '#5B9CFF',
+    borderColor: '#5B9CFF',
   },
   filterText: {
     fontSize: 13,
@@ -253,7 +261,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   loadingText: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 15,
     fontWeight: 'bold',
     marginTop: 14,
@@ -271,7 +279,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: '#00d4ff',
+    backgroundColor: '#5B9CFF',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 20,

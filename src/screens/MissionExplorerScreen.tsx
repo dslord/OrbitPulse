@@ -11,6 +11,7 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, MissionItem, MissionStatus } from '../types';
 import { MISSIONS_DATA } from '../data/missionsData';
+import { useTheme } from '../context/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionExplorer'>;
 
@@ -18,6 +19,7 @@ const STATUS_FILTERS: (MissionStatus | 'All')[] = ['All', 'Active', 'Completed',
 const AGENCY_FILTERS = ['All', 'NASA', 'ISRO', 'ESA', 'JAXA', 'CNSA'];
 
 export default function MissionExplorerScreen({ navigation }: Props) {
+  const { colors, activeTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<MissionStatus | 'All'>('All');
   const [selectedAgency, setSelectedAgency] = useState<string>('All');
@@ -77,19 +79,19 @@ export default function MissionExplorerScreen({ navigation }: Props) {
           keyboardShouldPersistTaps="handled"
         >
           {/* HEADER BANNER */}
-          <View style={styles.headerCard}>
-            <Text style={styles.headerTitle}>SPACE MISSION EXPLORER</Text>
-            <Text style={styles.headerSubtitle}>
+          <View style={[styles.headerCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+            <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>SPACE MISSION EXPLORER</Text>
+            <Text style={[styles.headerSubtitle, { color: colors.primaryAccent }]}>
               Explore Deep Space Probes, Lunar Landers & Astronomical Observatories
             </Text>
           </View>
 
           {/* SEARCH INPUT BAR */}
-          <View style={styles.searchContainer}>
+          <View style={[styles.searchContainer, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
             <TextInput
-              style={styles.searchInput}
+              style={[styles.searchInput, { color: colors.textPrimary }]}
               placeholder="Search mission name, agency, target, or category..."
-              placeholderTextColor="#64748b"
+              placeholderTextColor={colors.textMuted}
               value={searchQuery}
               onChangeText={setSearchQuery}
               autoCapitalize="none"
@@ -97,25 +99,38 @@ export default function MissionExplorerScreen({ navigation }: Props) {
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
-                <Text style={styles.clearText}>Clear</Text>
+                <Text style={[styles.clearText, { color: colors.textMuted }]}>Clear</Text>
               </TouchableOpacity>
             )}
           </View>
 
           {/* STATUS FILTER CHIPS */}
           <View style={styles.filterSection}>
-            <Text style={styles.filterLabel}>STATUS</Text>
+            <Text style={[styles.filterLabel, { color: colors.textMuted }]}>STATUS</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
               {STATUS_FILTERS.map((st) => {
                 const active = selectedStatus === st;
                 return (
                   <TouchableOpacity
                     key={st}
-                    style={[styles.chip, active && styles.chipActive]}
+                    style={[
+                      styles.chip,
+                      {
+                        backgroundColor: active ? colors.selectedSurface : colors.surface,
+                        borderColor: active ? colors.selectedIndicator : colors.surfaceBorder,
+                      },
+                    ]}
                     onPress={() => setSelectedStatus(st)}
                     activeOpacity={0.7}
                   >
-                    <Text style={[styles.chipText, active && styles.chipTextActive]}>{st}</Text>
+                    <Text
+                      style={[
+                        styles.chipText,
+                        { color: active ? colors.selectedIndicator : colors.textMuted, fontWeight: active ? 'bold' : '600' },
+                      ]}
+                    >
+                      {st}
+                    </Text>
                   </TouchableOpacity>
                 );
               })}
@@ -124,18 +139,31 @@ export default function MissionExplorerScreen({ navigation }: Props) {
 
           {/* AGENCY FILTER CHIPS */}
           <View style={styles.filterSection}>
-            <Text style={styles.filterLabel}>AGENCY</Text>
+            <Text style={[styles.filterLabel, { color: colors.textMuted }]}>AGENCY</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
               {AGENCY_FILTERS.map((ag) => {
                 const active = selectedAgency === ag;
                 return (
                   <TouchableOpacity
                     key={ag}
-                    style={[styles.chip, active && styles.chipActive]}
+                    style={[
+                      styles.chip,
+                      {
+                        backgroundColor: active ? colors.selectedSurface : colors.surface,
+                        borderColor: active ? colors.selectedIndicator : colors.surfaceBorder,
+                      },
+                    ]}
                     onPress={() => setSelectedAgency(ag)}
                     activeOpacity={0.7}
                   >
-                    <Text style={[styles.chipText, active && styles.chipTextActive]}>{ag}</Text>
+                    <Text
+                      style={[
+                        styles.chipText,
+                        { color: active ? colors.selectedIndicator : colors.textMuted, fontWeight: active ? 'bold' : '600' },
+                      ]}
+                    >
+                      {ag}
+                    </Text>
                   </TouchableOpacity>
                 );
               })}
@@ -144,9 +172,9 @@ export default function MissionExplorerScreen({ navigation }: Props) {
 
           {/* MISSIONS LIST */}
           {filteredMissions.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyTitle}>No Missions Found</Text>
-              <Text style={styles.emptyText}>
+            <View style={[styles.emptyContainer, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+              <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No Missions Found</Text>
+              <Text style={[styles.emptyText, { color: colors.textMuted }]}>
                 No space missions match your current search and filter criteria. Try adjusting your query or resetting filters.
               </Text>
             </View>
@@ -157,17 +185,19 @@ export default function MissionExplorerScreen({ navigation }: Props) {
               return (
                 <TouchableOpacity
                   key={mission.id}
-                  style={styles.missionCard}
+                  style={[styles.missionCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}
                   activeOpacity={0.8}
                   onPress={() => navigation.navigate('MissionDetails', { mission })}
                 >
                   <View style={styles.cardHeaderRow}>
                     <View style={styles.badgeRow}>
-                      <View style={styles.agencyBadge}>
-                        <Text style={styles.agencyBadgeText}>{mission.agencyAbbrev}</Text>
+                      <View style={[styles.agencyBadge, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
+                        <Text style={[styles.agencyBadgeText, { color: colors.primaryAccent }]}>{mission.agencyAbbrev}</Text>
                       </View>
-                      <View style={styles.targetBadge}>
-                        <Text style={styles.targetBadgeText}>{mission.target}</Text>
+                      <View style={[styles.targetBadge, { backgroundColor: colors.raisedSurface }]}>
+                        <Text style={[styles.targetBadgeText, { color: colors.textSecondary }]} numberOfLines={1}>
+                          {mission.target}
+                        </Text>
                       </View>
                     </View>
 
@@ -179,17 +209,17 @@ export default function MissionExplorerScreen({ navigation }: Props) {
                     </View>
                   </View>
 
-                  <Text style={styles.missionName}>{mission.name}</Text>
-                  <Text style={styles.categoryText}>{mission.category}</Text>
-                  <Text style={styles.descriptionSnippet} numberOfLines={2}>
+                  <Text style={[styles.missionName, { color: colors.textPrimary }]}>{mission.name}</Text>
+                  <Text style={[styles.categoryText, { color: colors.primaryAccent }]}>{mission.category}</Text>
+                  <Text style={[styles.descriptionSnippet, { color: colors.textSecondary }]} numberOfLines={2}>
                     {mission.description}
                   </Text>
 
-                  <View style={styles.cardFooter}>
-                    <Text style={styles.agencyFullName} numberOfLines={1}>
+                  <View style={[styles.cardFooter, { borderTopColor: colors.surfaceBorder }]}>
+                    <Text style={[styles.agencyFullName, { color: colors.textMuted }]} numberOfLines={1}>
                       {mission.agency}
                     </Text>
-                    <Text style={styles.detailsActionText}>View Details &rarr;</Text>
+                    <Text style={[styles.detailsActionText, { color: colors.primaryAccent }]}>View Details &rarr;</Text>
                   </View>
                 </TouchableOpacity>
               );
@@ -230,7 +260,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   headerSubtitle: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 12,
     fontWeight: '600',
     marginTop: 4,
@@ -284,8 +314,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   chipActive: {
-    backgroundColor: '#00d4ff',
-    borderColor: '#00d4ff',
+    backgroundColor: '#5B9CFF',
+    borderColor: '#5B9CFF',
   },
   chipText: {
     fontSize: 11,
@@ -330,23 +360,25 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
+    gap: 8,
   },
   badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    flexWrap: 'wrap',
+    flex: 1,
+    flexShrink: 1,
   },
   agencyBadge: {
-    backgroundColor: 'rgba(0, 212, 255, 0.15)',
+    backgroundColor: 'rgba(91, 156, 255, 0.15)',
     borderRadius: 8,
     paddingVertical: 3,
     paddingHorizontal: 8,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.3)',
+    borderColor: 'rgba(91, 156, 255, 0.3)',
   },
   agencyBadgeText: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 10,
     fontWeight: 'bold',
   },
@@ -355,6 +387,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: 3,
     paddingHorizontal: 8,
+    flexShrink: 1,
   },
   targetBadgeText: {
     color: '#cbd5e1',
@@ -368,6 +401,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 12,
     borderWidth: 1,
+    flexShrink: 0,
   },
   statusDot: {
     width: 6,
@@ -386,7 +420,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   categoryText: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 11,
     fontWeight: '600',
     marginBottom: 8,
@@ -412,7 +446,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   detailsActionText: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 12,
     fontWeight: 'bold',
   },

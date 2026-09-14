@@ -18,6 +18,7 @@ import {
 import { LaunchItem, RootStackParamList } from '../types';
 import { getCleanErrorMessage } from '../utils/errorUtils';
 import { formatFreshnessLabel } from '../utils/timeUtils';
+import { useTheme } from '../context/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'LaunchTracker'>;
 
@@ -30,6 +31,7 @@ const FILTERS: { id: FilterCategory; label: string }[] = [
 ];
 
 export default function LaunchTrackerScreen({ navigation }: Props) {
+  const { colors, activeTheme } = useTheme();
   const [launches, setLaunches] = useState<LaunchItem[]>([]);
   const [source, setSource] = useState<'live' | 'cache'>('live');
   const [cachedAt, setCachedAt] = useState<number | null>(null);
@@ -121,26 +123,26 @@ export default function LaunchTrackerScreen({ navigation }: Props) {
 
     return (
       <TouchableOpacity
-        style={styles.launchCard}
+        style={[styles.launchCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}
         activeOpacity={0.8}
         onPress={() => handleCardPress(item)}
       >
         <View style={styles.cardHeader}>
-          <View style={styles.providerBadge}>
-            <Text style={styles.providerText} numberOfLines={1}>
+          <View style={[styles.providerBadge, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
+            <Text style={[styles.providerText, { color: colors.primaryAccent }]} numberOfLines={1}>
               {item.providerName}
             </Text>
           </View>
           <View
             style={[
               styles.statusBadge,
-              countdown.isPastOrLive && styles.statusBadgeLive,
+              { backgroundColor: countdown.isPastOrLive ? colors.liveMuted : colors.raisedSurface },
             ]}
           >
             <Text
               style={[
                 styles.statusText,
-                countdown.isPastOrLive && styles.statusTextLive,
+                { color: countdown.isPastOrLive ? colors.live : colors.textMuted },
               ]}
             >
               {item.statusAbbrev.toUpperCase()}
@@ -148,33 +150,33 @@ export default function LaunchTrackerScreen({ navigation }: Props) {
           </View>
         </View>
 
-        <Text style={styles.launchName} numberOfLines={2}>
+        <Text style={[styles.launchName, { color: colors.textPrimary }]} numberOfLines={2}>
           {item.name}
         </Text>
 
-        <View style={styles.countdownRow}>
-          <Text style={styles.countdownLabel}>COUNTDOWN</Text>
+        <View style={[styles.countdownRow, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
+          <Text style={[styles.countdownLabel, { color: colors.textMuted }]}>COUNTDOWN</Text>
           <Text
             style={[
               styles.countdownValue,
-              countdown.isPastOrLive && styles.countdownValueLive,
+              { color: countdown.isPastOrLive ? colors.live : colors.primaryAccent },
             ]}
           >
             {countdown.countdownText}
           </Text>
         </View>
 
-        <View style={styles.cardFooter}>
+        <View style={[styles.cardFooter, { borderTopColor: colors.surfaceBorder }]}>
           <View style={styles.footerItem}>
-            <Text style={styles.footerLabel}>Rocket</Text>
-            <Text style={styles.footerValue} numberOfLines={1}>
+            <Text style={[styles.footerLabel, { color: colors.textMuted }]}>Rocket</Text>
+            <Text style={[styles.footerValue, { color: colors.textPrimary }]} numberOfLines={1}>
               {item.rocketName}
             </Text>
           </View>
 
           <View style={styles.footerItemRight}>
-            <Text style={styles.footerLabel}>Launch Time</Text>
-            <Text style={styles.footerValue} numberOfLines={1}>
+            <Text style={[styles.footerLabel, { color: colors.textMuted }]}>Launch Time</Text>
+            <Text style={[styles.footerValue, { color: colors.textPrimary }]} numberOfLines={1}>
               {dateFormatted}
             </Text>
           </View>
@@ -191,17 +193,28 @@ export default function LaunchTrackerScreen({ navigation }: Props) {
         resizeMode="cover"
       >
         {/* Category Chip Selector */}
-        <View style={styles.chipRow}>
+        <View style={[styles.chipRow, { backgroundColor: colors.surface, borderBottomColor: colors.surfaceBorder }]}>
           {FILTERS.map((f) => {
             const active = f.id === category;
             return (
               <TouchableOpacity
                 key={f.id}
-                style={[styles.chip, active && styles.chipActive]}
+                style={[
+                  styles.chip,
+                  {
+                    backgroundColor: active ? colors.selectedSurface : colors.surface,
+                    borderColor: active ? colors.selectedIndicator : colors.surfaceBorder,
+                  },
+                ]}
                 onPress={() => setCategory(f.id)}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                <Text
+                  style={[
+                    styles.chipText,
+                    { color: active ? colors.selectedText : colors.textMuted },
+                  ]}
+                >
                   {f.label}
                 </Text>
               </TouchableOpacity>
@@ -211,7 +224,7 @@ export default function LaunchTrackerScreen({ navigation }: Props) {
 
         {!loading && !error && (
           <View style={styles.freshnessContainer}>
-            <Text style={styles.freshnessText}>
+            <Text style={[styles.freshnessText, { color: colors.textMuted }]}>
               {formatFreshnessLabel({ source, cachedAt, lastUpdated, prefix: 'Manifest' })}
             </Text>
           </View>
@@ -220,18 +233,18 @@ export default function LaunchTrackerScreen({ navigation }: Props) {
         {/* Loading View */}
         {loading && (
           <View style={styles.centerContainer}>
-            <ActivityIndicator size="large" color="#00d4ff" />
-            <Text style={styles.loadingText}>Fetching Live Launch Schedule...</Text>
+            <ActivityIndicator size="large" color={colors.primaryAccent} />
+            <Text style={[styles.loadingText, { color: colors.primaryAccent }]}>Fetching Live Launch Schedule...</Text>
           </View>
         )}
 
         {/* Error View */}
         {error && !loading && (
           <View style={styles.centerContainer}>
-            <Text style={styles.errorTitle}>Connection Error</Text>
-            <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={onRefresh}>
-              <Text style={styles.retryText}>Retry Fetching Launches</Text>
+            <Text style={[styles.errorTitle, { color: colors.critical }]}>Connection Error</Text>
+            <Text style={[styles.errorText, { color: colors.textSecondary }]}>{error}</Text>
+            <TouchableOpacity style={[styles.retryButton, { backgroundColor: colors.primaryAccent }]} onPress={onRefresh}>
+              <Text style={[styles.retryText, { color: colors.background }]}>Retry Fetching Launches</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -248,14 +261,14 @@ export default function LaunchTrackerScreen({ navigation }: Props) {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                tintColor="#00d4ff"
-                colors={['#00d4ff']}
+                tintColor={colors.primaryAccent}
+                colors={[colors.primaryAccent]}
               />
             }
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyTitle}>No Launches Found</Text>
-                <Text style={styles.emptySub}>
+                <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No Launches Found</Text>
+                <Text style={[styles.emptySub, { color: colors.textMuted }]}>
                   No upcoming launches fit the selected filter criteria.
                 </Text>
               </View>
@@ -270,7 +283,6 @@ export default function LaunchTrackerScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0b0d1b',
   },
   background: {
     flex: 1,
@@ -281,32 +293,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: 'rgba(11, 13, 27, 0.85)',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 212, 255, 0.15)',
   },
   chip: {
     flex: 1,
     marginHorizontal: 3,
     paddingVertical: 8,
     borderRadius: 16,
-    backgroundColor: '#161936',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  chipActive: {
-    backgroundColor: '#00d4ff',
-    borderColor: '#00d4ff',
   },
   chipText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#94a3b8',
-  },
-  chipTextActive: {
-    color: '#0b0d1b',
-    fontWeight: 'bold',
   },
   centerContainer: {
     flex: 1,
@@ -315,31 +314,26 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   loadingText: {
-    color: '#00d4ff',
     fontSize: 16,
     fontWeight: 'bold',
     marginTop: 14,
   },
   errorTitle: {
-    color: '#ff4d4d',
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 8,
   },
   errorText: {
-    color: '#ffffff',
     fontSize: 13,
     textAlign: 'center',
     marginBottom: 20,
   },
   retryButton: {
-    backgroundColor: '#00d4ff',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 20,
   },
   retryText: {
-    color: '#0b0d1b',
     fontWeight: 'bold',
     fontSize: 14,
   },
@@ -348,17 +342,10 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   launchCard: {
-    backgroundColor: 'rgba(18, 22, 44, 0.92)',
     borderRadius: 16,
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.2)',
-    shadowColor: '#00d4ff',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 4,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -367,44 +354,31 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   providerBadge: {
-    backgroundColor: 'rgba(0, 212, 255, 0.12)',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.3)',
     maxWidth: '70%',
   },
   providerText: {
-    color: '#00d4ff',
     fontSize: 11,
     fontWeight: 'bold',
   },
   statusBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
   },
-  statusBadgeLive: {
-    backgroundColor: 'rgba(34, 197, 94, 0.18)',
-  },
   statusText: {
-    color: '#94a3b8',
     fontSize: 11,
     fontWeight: 'bold',
   },
-  statusTextLive: {
-    color: '#22c55e',
-  },
   launchName: {
-    color: '#f8fafc',
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 12,
   },
   countdownRow: {
-    backgroundColor: 'rgba(11, 13, 27, 0.85)',
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -413,28 +387,21 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.2)',
   },
   countdownLabel: {
-    color: '#94a3b8',
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 1,
   },
   countdownValue: {
-    color: '#00d4ff',
     fontSize: 16,
     fontWeight: 'bold',
     fontVariant: ['tabular-nums'],
-  },
-  countdownValueLive: {
-    color: '#22c55e',
   },
   cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.06)',
     paddingTop: 10,
   },
   footerItem: {
@@ -446,13 +413,11 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   footerLabel: {
-    color: '#64748b',
     fontSize: 10,
     fontWeight: '600',
     textTransform: 'uppercase',
   },
   footerValue: {
-    color: '#e2e8f0',
     fontSize: 12,
     fontWeight: '600',
     marginTop: 2,
@@ -462,13 +427,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyTitle: {
-    color: '#ffffff',
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 4,
   },
   emptySub: {
-    color: '#94a3b8',
     fontSize: 13,
     textAlign: 'center',
   },
@@ -479,7 +442,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   freshnessText: {
-    color: '#94a3b8',
     fontSize: 11,
     fontWeight: '600',
   },

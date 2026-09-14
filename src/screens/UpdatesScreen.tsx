@@ -17,10 +17,12 @@ import { fetchSpaceNewsWithMeta } from '../services/spaceNewsService';
 import { RootStackParamList, SpaceNewsArticle } from '../types';
 import { getCleanErrorMessage } from '../utils/errorUtils';
 import { formatFreshnessLabel } from '../utils/timeUtils';
+import { useTheme } from '../context/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Updates'>;
 
 export default function UpdatesScreen({ navigation }: Props) {
+  const { colors, activeTheme } = useTheme();
   const {
     telemetry,
     loading: telemetryLoading,
@@ -83,7 +85,7 @@ export default function UpdatesScreen({ navigation }: Props) {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ImageBackground
         source={require('../../assets/bg_updates.jpg')}
         style={styles.background}
@@ -95,8 +97,8 @@ export default function UpdatesScreen({ navigation }: Props) {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onManualRefresh}
-              tintColor="#00d4ff"
-              colors={['#00d4ff']}
+              tintColor={colors.primaryAccent}
+              colors={[colors.primaryAccent]}
             />
           }
         >
@@ -107,26 +109,37 @@ export default function UpdatesScreen({ navigation }: Props) {
                 style={styles.blogIcon}
               />
               <View>
-                <Text style={styles.headerTitle}>Space Updates & Feed</Text>
-                <Text style={styles.headerSubtitle}>Real-time ISS Orbit & News</Text>
+                <Text style={[styles.headerTitle, { color: '#FFFFFF' }]}>Space Updates & Feed</Text>
+                <Text style={[styles.headerSubtitle, { color: colors.primaryAccent }]}>Real-time ISS Orbit & News</Text>
               </View>
             </View>
 
-            <TouchableOpacity style={styles.refreshBtn} onPress={onManualRefresh}>
+            <TouchableOpacity
+              style={[
+                styles.refreshBtn,
+                {
+                  backgroundColor: colors.raisedSurface,
+                  borderColor: colors.surfaceBorder,
+                  borderWidth: 1,
+                },
+              ]}
+              onPress={onManualRefresh}
+              activeOpacity={0.7}
+            >
               <Image
                 source={require('../../assets/refresh_icon.png')}
-                style={styles.refreshIcon}
+                style={[styles.refreshIcon, { tintColor: colors.primaryAccent }]}
               />
             </TouchableOpacity>
           </View>
 
           {/* Live Telemetry Card */}
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
             <View style={styles.cardHeaderRow}>
-              <Text style={styles.cardSectionTitle}>Live Orbital Telemetry</Text>
+              <Text style={[styles.cardSectionTitle, { color: colors.primaryAccent }]}>Live Orbital Telemetry</Text>
               <View style={[styles.liveIndicator, telemetryCached && styles.cacheIndicator]}>
-                {!telemetryCached && <View style={styles.liveDot} />}
-                <Text style={[styles.liveText, telemetryCached && styles.cacheText]}>
+                {!telemetryCached && <View style={[styles.liveDot, { backgroundColor: colors.live }]} />}
+                <Text style={[styles.liveText, { color: telemetryCached ? colors.warning : colors.live }]}>
                   {telemetryCached
                     ? formatFreshnessLabel({ source: 'cache', cachedAt: telemetryCachedAt, prefix: 'Cached' })
                     : 'LIVE'}
@@ -135,35 +148,35 @@ export default function UpdatesScreen({ navigation }: Props) {
             </View>
 
             {telemetryLoading && !telemetry ? (
-              <ActivityIndicator size="small" color="#00d4ff" style={{ marginVertical: 15 }} />
+              <ActivityIndicator size="small" color={colors.primaryAccent} style={{ marginVertical: 15 }} />
             ) : telemetryError && !telemetry ? (
-              <Text style={styles.errorText}>{telemetryError}</Text>
+              <Text style={[styles.errorText, { color: colors.critical }]}>{telemetryError}</Text>
             ) : (
               <View style={styles.telemetryGrid}>
-                <View style={styles.gridBox}>
-                  <Text style={styles.boxLabel}>Latitude</Text>
-                  <Text style={styles.boxValue}>
+                <View style={[styles.gridBox, { backgroundColor: colors.raisedSurface }]}>
+                  <Text style={[styles.boxLabel, { color: colors.textMuted }]}>Latitude</Text>
+                  <Text style={[styles.boxValue, { color: colors.textPrimary }]}>
                     {telemetry ? `${telemetry.latitude.toFixed(4)}°` : '--'}
                   </Text>
                 </View>
 
-                <View style={styles.gridBox}>
-                  <Text style={styles.boxLabel}>Longitude</Text>
-                  <Text style={styles.boxValue}>
+                <View style={[styles.gridBox, { backgroundColor: colors.raisedSurface }]}>
+                  <Text style={[styles.boxLabel, { color: colors.textMuted }]}>Longitude</Text>
+                  <Text style={[styles.boxValue, { color: colors.textPrimary }]}>
                     {telemetry ? `${telemetry.longitude.toFixed(4)}°` : '--'}
                   </Text>
                 </View>
 
-                <View style={styles.gridBox}>
-                  <Text style={styles.boxLabel}>Altitude</Text>
-                  <Text style={styles.boxValue}>
+                <View style={[styles.gridBox, { backgroundColor: colors.raisedSurface }]}>
+                  <Text style={[styles.boxLabel, { color: colors.textMuted }]}>Altitude</Text>
+                  <Text style={[styles.boxValue, { color: colors.textPrimary }]}>
                     {telemetry ? `${Math.round(telemetry.altitude)} km` : '--'}
                   </Text>
                 </View>
 
-                <View style={styles.gridBox}>
-                  <Text style={styles.boxLabel}>Speed</Text>
-                  <Text style={styles.boxValue}>
+                <View style={[styles.gridBox, { backgroundColor: colors.raisedSurface }]}>
+                  <Text style={[styles.boxLabel, { color: colors.textMuted }]}>Speed</Text>
+                  <Text style={[styles.boxValue, { color: colors.textPrimary }]}>
                     {telemetry ? `${Math.round(telemetry.velocity)} km/h` : '--'}
                   </Text>
                 </View>
@@ -172,19 +185,19 @@ export default function UpdatesScreen({ navigation }: Props) {
           </View>
 
           {/* News & Bulletins Section */}
-          <Text style={styles.sectionHeaderTitle}>Orbital Mission Reports</Text>
+          <Text style={[styles.sectionHeaderTitle, { color: '#FFFFFF' }]}>Orbital Mission Reports</Text>
 
           {newsLoading && articles.length === 0 ? (
-            <View style={styles.newsCenterContainer}>
-              <ActivityIndicator size="large" color="#00d4ff" />
-              <Text style={styles.loadingNewsText}>Fetching Live Space News...</Text>
+            <View style={[styles.newsCenterContainer, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+              <ActivityIndicator size="large" color={colors.primaryAccent} />
+              <Text style={[styles.loadingNewsText, { color: colors.primaryAccent }]}>Fetching Live Space News...</Text>
             </View>
           ) : newsError && articles.length === 0 ? (
-            <View style={styles.newsCenterContainer}>
-              <Text style={styles.newsErrorTitle}>News Telemetry Offline</Text>
-              <Text style={styles.newsErrorText}>{newsError}</Text>
-              <TouchableOpacity style={styles.newsRetryBtn} onPress={loadNews}>
-                <Text style={styles.newsRetryText}>Retry News Feed</Text>
+            <View style={[styles.newsCenterContainer, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+              <Text style={[styles.newsErrorTitle, { color: colors.critical }]}>News Telemetry Offline</Text>
+              <Text style={[styles.newsErrorText, { color: colors.textSecondary }]}>{newsError}</Text>
+              <TouchableOpacity style={[styles.newsRetryBtn, { backgroundColor: colors.primaryAccent }]} onPress={loadNews}>
+                <Text style={[styles.newsRetryText, { color: colors.background }]}>Retry News Feed</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -192,29 +205,29 @@ export default function UpdatesScreen({ navigation }: Props) {
               {articles.map((item) => (
                 <TouchableOpacity
                   key={item.id}
-                  style={styles.newsCard}
+                  style={[styles.newsCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder, borderWidth: 1 }]}
                   activeOpacity={0.85}
                   onPress={() => handleOpenArticle(item.url)}
                 >
                   {item.image_url ? (
                     <Image
                       source={{ uri: item.image_url }}
-                      style={styles.newsThumbnail}
+                      style={[styles.newsThumbnail, { backgroundColor: colors.raisedSurface }]}
                       resizeMode="cover"
                     />
                   ) : null}
                   <View style={styles.newsCardContent}>
                     <View style={styles.newsHeader}>
-                      <Text style={styles.newsSource} numberOfLines={1}>
+                      <Text style={[styles.newsSource, { color: colors.primaryAccent }]} numberOfLines={1}>
                         {item.news_site || 'Space News'} • {formatDate(item.published_at)}
                       </Text>
-                      <Text style={styles.newsReadMore}>Read &rarr;</Text>
+                      <Text style={[styles.newsReadMore, { color: colors.primaryAccent }]}>Read &rarr;</Text>
                     </View>
-                    <Text style={styles.newsTitle} numberOfLines={2}>
+                    <Text style={[styles.newsTitle, { color: colors.textPrimary }]} numberOfLines={2}>
                       {item.title}
                     </Text>
                     {item.summary ? (
-                      <Text style={styles.newsSummary} numberOfLines={3}>
+                      <Text style={[styles.newsSummary, { color: colors.textSecondary }]} numberOfLines={3}>
                         {item.summary}
                       </Text>
                     ) : null}
@@ -223,11 +236,11 @@ export default function UpdatesScreen({ navigation }: Props) {
               ))}
 
               <TouchableOpacity
-                style={styles.viewMoreBtn}
+                style={[styles.viewMoreBtn, { backgroundColor: colors.raisedSurface, borderColor: colors.primaryAccent }]}
                 activeOpacity={0.8}
                 onPress={() => navigation.navigate('SpaceNews')}
               >
-                <Text style={styles.viewMoreText}>View More Space News &rarr;</Text>
+                <Text style={[styles.viewMoreText, { color: colors.primaryAccent }]}>View More Space News &rarr;</Text>
               </TouchableOpacity>
             </>
           )}
@@ -275,11 +288,11 @@ const styles = StyleSheet.create({
   },
   headerSubtitle: {
     fontSize: 12,
-    color: '#00d4ff',
+    color: '#5B9CFF',
   },
   refreshBtn: {
     padding: 8,
-    backgroundColor: 'rgba(0, 212, 255, 0.15)',
+    backgroundColor: 'rgba(91, 156, 255, 0.15)',
     borderRadius: 20,
   },
   refreshIcon: {
@@ -293,7 +306,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.3)',
+    borderColor: 'rgba(91, 156, 255, 0.3)',
   },
   cardHeaderRow: {
     flexDirection: 'row',
@@ -304,7 +317,7 @@ const styles = StyleSheet.create({
   cardSectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#00d4ff',
+    color: '#5B9CFF',
   },
   liveIndicator: {
     flexDirection: 'row',
@@ -372,11 +385,11 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.2)',
+    borderColor: 'rgba(91, 156, 255, 0.2)',
     marginBottom: 16,
   },
   loadingNewsText: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     marginTop: 12,
     fontSize: 14,
     fontWeight: '600',
@@ -394,7 +407,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   newsRetryBtn: {
-    backgroundColor: '#00d4ff',
+    backgroundColor: '#5B9CFF',
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 16,
@@ -449,7 +462,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   viewMoreBtn: {
-    backgroundColor: 'rgba(0, 212, 255, 0.12)',
+    backgroundColor: 'rgba(91, 156, 255, 0.12)',
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 20,
@@ -457,10 +470,10 @@ const styles = StyleSheet.create({
     marginTop: 6,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#00d4ff',
+    borderColor: '#5B9CFF',
   },
   viewMoreText: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 15,
     fontWeight: 'bold',
   },

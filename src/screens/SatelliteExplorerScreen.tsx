@@ -13,21 +13,23 @@ import {
 import MapLibreGL from '@maplibre/maplibre-react-native';
 import { useSatelliteExplorer } from '../hooks/useSatelliteExplorer';
 import { formatFreshnessLabel } from '../utils/timeUtils';
+import { useTheme } from '../context/ThemeContext';
 import {
   calculateOrbitalVisualization,
 } from '../services/satelliteService';
 import { SatelliteCategory, SatelliteItem } from '../types';
 
 const CATEGORIES: { id: SatelliteCategory; label: string }[] = [
-  { id: 'visual', label: '⭐ Brightest' },
-  { id: 'stations', label: '🛸 Stations' },
-  { id: 'weather', label: '🛰️ Weather' },
-  { id: 'resource', label: '🌍 Science' },
+  { id: 'visual', label: 'Brightest' },
+  { id: 'stations', label: 'Stations' },
+  { id: 'weather', label: 'Weather' },
+  { id: 'resource', label: 'Science' },
 ];
 
 const ORBIT_ARROW_AHEAD_SECONDS = 50;
 
 export default function SatelliteExplorerScreen() {
+  const { colors, activeTheme } = useTheme();
   const {
     category,
     setCategory,
@@ -77,12 +79,12 @@ export default function SatelliteExplorerScreen() {
         resizeMode="cover"
       >
         {/* Header Search & Category Filter */}
-        <View style={styles.controlHeader}>
-          <View style={styles.searchContainer}>
+        <View style={[styles.controlHeader, { backgroundColor: colors.surface, borderBottomColor: colors.surfaceBorder, borderBottomWidth: 1 }]}>
+          <View style={[styles.searchContainer, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
             <TextInput
-              style={styles.searchInput}
+              style={[styles.searchInput, { color: colors.textPrimary }]}
               placeholder="Search satellite by name or NORAD ID..."
-              placeholderTextColor="#64748b"
+              placeholderTextColor={colors.textMuted}
               value={searchQuery}
               onChangeText={setSearchQuery}
               autoCapitalize="none"
@@ -93,7 +95,7 @@ export default function SatelliteExplorerScreen() {
                 style={styles.clearSearchBtn}
                 onPress={() => setSearchQuery('')}
               >
-                <Text style={styles.clearSearchText}>✕</Text>
+                <Text style={[styles.clearSearchText, { color: colors.textMuted }]}>✕</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -105,11 +107,22 @@ export default function SatelliteExplorerScreen() {
               return (
                 <TouchableOpacity
                   key={cat.id}
-                  style={[styles.chip, active && styles.chipActive]}
+                  style={[
+                    styles.chip,
+                    {
+                      backgroundColor: active ? colors.selectedSurface : colors.raisedSurface,
+                      borderColor: active ? colors.selectedIndicator : colors.surfaceBorder,
+                    },
+                  ]}
                   onPress={() => setCategory(cat.id)}
                   activeOpacity={0.7}
                 >
-                  <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                  <Text
+                    style={[
+                      styles.chipText,
+                      { color: active ? colors.selectedIndicator : colors.textMuted, fontWeight: active ? 'bold' : '600' },
+                    ]}
+                  >
                     {cat.label}
                   </Text>
                 </TouchableOpacity>
@@ -121,8 +134,8 @@ export default function SatelliteExplorerScreen() {
         {/* Loading View */}
         {loading && !selectedSatellite && (
           <View style={styles.centerContainer}>
-            <ActivityIndicator size="large" color="#00d4ff" />
-            <Text style={styles.loadingText}>Fetching Orbital Telemetry...</Text>
+            <ActivityIndicator size="large" color={colors.primaryAccent} />
+            <Text style={[styles.loadingText, { color: colors.textPrimary }]}>Fetching Orbital Telemetry...</Text>
           </View>
         )}
 
@@ -130,8 +143,8 @@ export default function SatelliteExplorerScreen() {
         {error && !selectedSatellite && (
           <View style={styles.centerContainer}>
             <Text style={styles.errorTitle}>Signal Disrupted</Text>
-            <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={refetch}>
+            <Text style={[styles.errorText, { color: colors.textSecondary }]}>{error}</Text>
+            <TouchableOpacity style={[styles.retryButton, { backgroundColor: colors.primaryAccent }]} onPress={refetch}>
               <Text style={styles.retryText}>Retry Connection</Text>
             </TouchableOpacity>
           </View>
@@ -139,13 +152,13 @@ export default function SatelliteExplorerScreen() {
 
         {/* Main Explorer Content */}
         {!loading && !error && (
-          <View style={styles.contentBody}>
+          <View style={[styles.contentBody, { backgroundColor: colors.background }]}>
             {/* MapLibre Map View */}
-            <View style={styles.mapContainer}>
+            <View style={[styles.mapContainer, { borderColor: colors.surfaceBorder, borderWidth: 1 }]}>
               {orbitalState ? (
                 <MapLibreGL.MapView
                   style={styles.mapView}
-                  mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+                  mapStyle={activeTheme === 'light' ? 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json' : 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'}
                   logoEnabled={false}
                   attributionEnabled={true}
                   attributionPosition={{ bottom: 6, right: 6 }}
@@ -170,7 +183,7 @@ export default function SatelliteExplorerScreen() {
                         <MapLibreGL.LineLayer
                           id={`sat-orbit-line-${orbitalState.satId}`}
                           style={{
-                            lineColor: '#00d4ff',
+                            lineColor: colors.primaryAccent,
                             lineWidth: 2.5,
                             lineOpacity: 0.75,
                             lineCap: 'round',
@@ -194,13 +207,13 @@ export default function SatelliteExplorerScreen() {
                               ],
                             }}
                           >
-                            <Text style={styles.arrowSymbol}>▲</Text>
+                            <Text style={[styles.arrowSymbol, { color: colors.primaryAccent }]}>▲</Text>
                           </View>
                         </View>
                       </MapLibreGL.MarkerView>
                     )}
 
-                    {/* Selected Satellite Position Marker (Reusing ISS Icon & Preserved Name Badge) */}
+                    {/* Selected Satellite Position Marker */}
                     <MapLibreGL.MarkerView
                       id={`sat-marker-${orbitalState.satId}`}
                       coordinate={[
@@ -209,8 +222,8 @@ export default function SatelliteExplorerScreen() {
                       ]}
                     >
                       <View style={styles.markerContainer}>
-                        <View style={styles.markerBadge}>
-                          <Text style={styles.markerBadgeText} numberOfLines={1}>
+                        <View style={[styles.markerBadge, { backgroundColor: colors.surface, borderColor: colors.primaryAccent }]}>
+                          <Text style={[styles.markerBadgeText, { color: colors.primaryAccent }]} numberOfLines={1}>
                             {orbitalState.satName}
                           </Text>
                         </View>
@@ -223,53 +236,53 @@ export default function SatelliteExplorerScreen() {
                   </React.Fragment>
                 </MapLibreGL.MapView>
               ) : (
-                <View style={styles.noPositionBox}>
-                  <Text style={styles.noPositionText}>
+                <View style={[styles.noPositionBox, { backgroundColor: colors.surface }]}>
+                  <Text style={[styles.noPositionText, { color: colors.textMuted }]}>
                     Position calculations unavailable for selected satellite.
                   </Text>
                 </View>
               )}
             </View>
 
-            {/* Selected Satellite Telemetry Overlay */}
+            {/* Selected Satellite Telemetry Overlay Panel */}
             {selectedSatellite && orbitalState && (
-              <View style={styles.telemetryOverlay}>
+              <View style={[styles.telemetryOverlay, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder, borderBottomWidth: 1 }]}>
                 <View style={styles.telemetryHeaderRow}>
                   <View style={styles.telemetryTitleBox}>
-                    <Text style={styles.satelliteNameText} numberOfLines={1}>
+                    <Text style={[styles.satelliteNameText, { color: colors.textPrimary }]} numberOfLines={1}>
                       {orbitalState.satName}
                     </Text>
-                    <Text style={styles.satelliteMetaText}>
+                    <Text style={[styles.satelliteMetaText, { color: colors.textMuted }]}>
                       NORAD #{orbitalState.noradId} | {orbitalState.designator}
                     </Text>
                   </View>
-                  <Text style={[styles.liveBadge, source === 'cache' && styles.cacheBadge]}>
+                  <Text style={[styles.liveBadge, { color: colors.primaryAccent, backgroundColor: colors.raisedSurface }]}>
                     {formatFreshnessLabel({ source, cachedAt, lastUpdated, prefix: 'GP Data' })}
                   </Text>
                 </View>
 
                 <View style={styles.telemetryGrid}>
-                  <View style={styles.telemetryItem}>
-                    <Text style={styles.label}>Latitude</Text>
-                    <Text style={styles.value} numberOfLines={1}>
+                  <View style={[styles.telemetryItem, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
+                    <Text style={[styles.label, { color: colors.textMuted }]}>Latitude</Text>
+                    <Text style={[styles.value, { color: colors.textPrimary }]} numberOfLines={1}>
                       {orbitalState.currentPos.latitude.toFixed(3)}°
                     </Text>
                   </View>
-                  <View style={styles.telemetryItem}>
-                    <Text style={styles.label}>Longitude</Text>
-                    <Text style={styles.value} numberOfLines={1}>
+                  <View style={[styles.telemetryItem, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
+                    <Text style={[styles.label, { color: colors.textMuted }]}>Longitude</Text>
+                    <Text style={[styles.value, { color: colors.textPrimary }]} numberOfLines={1}>
                       {orbitalState.currentPos.longitude.toFixed(3)}°
                     </Text>
                   </View>
-                  <View style={styles.telemetryItem}>
-                    <Text style={styles.label}>Altitude</Text>
-                    <Text style={styles.value} numberOfLines={1}>
+                  <View style={[styles.telemetryItem, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
+                    <Text style={[styles.label, { color: colors.textMuted }]}>Altitude</Text>
+                    <Text style={[styles.value, { color: colors.textPrimary }]} numberOfLines={1}>
                       {Math.round(orbitalState.currentPos.altitudeKm)} km
                     </Text>
                   </View>
-                  <View style={styles.telemetryItem}>
-                    <Text style={styles.label}>Velocity</Text>
-                    <Text style={styles.value} numberOfLines={1}>
+                  <View style={[styles.telemetryItem, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
+                    <Text style={[styles.label, { color: colors.textMuted }]}>Velocity</Text>
+                    <Text style={[styles.value, { color: colors.textPrimary }]} numberOfLines={1}>
                       {Math.round(orbitalState.currentPos.velocityKmH).toLocaleString(
                         'en-US'
                       )}{' '}
@@ -281,16 +294,16 @@ export default function SatelliteExplorerScreen() {
             )}
 
             {/* Scrollable Satellite Catalog List */}
-            <View style={styles.listContainer}>
+            <View style={[styles.listContainer, { backgroundColor: colors.surface }]}>
               <View style={styles.listHeader}>
-                <Text style={styles.listTitle}>
+                <Text style={[styles.listTitle, { color: colors.textPrimary }]}>
                   Satellites Catalog ({filteredSatellites.length})
                 </Text>
               </View>
 
               {filteredSatellites.length === 0 ? (
                 <View style={styles.emptyContainer}>
-                  <Text style={styles.emptyText}>No satellites match "{searchQuery}"</Text>
+                  <Text style={[styles.emptyText, { color: colors.textMuted }]}>No satellites match "{searchQuery}"</Text>
                 </View>
               ) : (
                 <FlatList
@@ -302,7 +315,10 @@ export default function SatelliteExplorerScreen() {
                       <TouchableOpacity
                         style={[
                           styles.satelliteCard,
-                          isSelected && styles.satelliteCardSelected,
+                          {
+                            backgroundColor: isSelected ? colors.selectedSurface : colors.raisedSurface,
+                            borderColor: isSelected ? colors.selectedIndicator : colors.surfaceBorder,
+                          },
                         ]}
                         onPress={() => setSelectedSatId(item.id)}
                         activeOpacity={0.7}
@@ -311,23 +327,23 @@ export default function SatelliteExplorerScreen() {
                           <Text
                             style={[
                               styles.cardName,
-                              isSelected && styles.cardNameSelected,
+                              { color: isSelected ? colors.selectedIndicator : colors.textPrimary },
                             ]}
                             numberOfLines={1}
                           >
                             {item.name}
                           </Text>
-                          <Text style={styles.cardSub}>
+                          <Text style={[styles.cardSub, { color: colors.textMuted }]}>
                             NORAD: {item.noradId} | {item.designator}
                           </Text>
                         </View>
                         {item.position && (
                           <View style={styles.cardCoords}>
-                            <Text style={styles.coordText}>
+                            <Text style={[styles.coordText, { color: colors.textSecondary }]}>
                               {item.position.latitude.toFixed(3)}°,{' '}
                               {item.position.longitude.toFixed(3)}°
                             </Text>
-                            <Text style={styles.altText}>
+                            <Text style={[styles.altText, { color: colors.textMuted }]}>
                               {Math.round(item.position.altitudeKm)} km
                             </Text>
                           </View>
@@ -388,27 +404,26 @@ const styles = StyleSheet.create({
   },
   chipRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 10,
   },
   chip: {
     flex: 1,
+    height: 36,
     marginHorizontal: 3,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: '#161936',
+    borderRadius: 18,
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
-  chipActive: {
-    backgroundColor: '#00d4ff',
-    borderColor: '#00d4ff',
-  },
+  chipActive: {},
   chipText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#94a3b8',
+    textAlign: 'center',
+    lineHeight: 14,
   },
   chipTextActive: {
     color: '#0b0d1b',
@@ -421,7 +436,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   loadingText: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 16,
     fontWeight: 'bold',
     marginTop: 12,
@@ -439,7 +454,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: '#00d4ff',
+    backgroundColor: '#5B9CFF',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 20,
@@ -487,16 +502,11 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#00d4ff',
+    borderColor: '#5B9CFF',
     marginBottom: 4,
-    shadowColor: '#00d4ff',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
-    elevation: 8,
   },
   markerBadgeText: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 11,
     fontWeight: 'bold',
     textAlign: 'center',
@@ -509,21 +519,16 @@ const styles = StyleSheet.create({
     zIndex: 900,
   },
   arrowSymbol: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 14,
     fontWeight: 'bold',
     lineHeight: 16,
     textAlign: 'center',
-    textShadowColor: 'rgba(0, 212, 255, 0.9)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 5,
   },
   telemetryOverlay: {
-    backgroundColor: 'rgba(11, 13, 27, 0.95)',
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 212, 255, 0.25)',
   },
   telemetryHeaderRow: {
     flexDirection: 'row',
@@ -536,28 +541,21 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   satelliteNameText: {
-    color: '#00d4ff',
     fontSize: 16,
     fontWeight: 'bold',
   },
   satelliteMetaText: {
-    color: '#94a3b8',
     fontSize: 11,
     marginTop: 2,
   },
   liveBadge: {
-    color: '#22c55e',
     fontSize: 11,
     fontWeight: 'bold',
-    backgroundColor: 'rgba(34, 197, 94, 0.15)',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 10,
   },
-  cacheBadge: {
-    color: '#eab308',
-    backgroundColor: 'rgba(234, 179, 8, 0.15)',
-  },
+  cacheBadge: {},
   telemetryGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -565,30 +563,25 @@ const styles = StyleSheet.create({
   telemetryItem: {
     flex: 1,
     minWidth: 0,
-    backgroundColor: 'rgba(22, 25, 54, 0.85)',
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 6,
     marginHorizontal: 2,
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.2)',
   },
   label: {
     fontSize: 9,
-    color: '#94a3b8',
     textTransform: 'uppercase',
     fontWeight: '600',
     letterSpacing: 0.4,
   },
   value: {
     fontSize: 12,
-    color: '#f8fafc',
     fontWeight: 'bold',
     marginTop: 2,
   },
   listContainer: {
     flex: 1,
-    backgroundColor: 'rgba(11, 13, 27, 0.8)',
     paddingHorizontal: 16,
     paddingTop: 10,
   },
@@ -596,7 +589,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   listTitle: {
-    color: '#ffffff',
     fontSize: 14,
     fontWeight: 'bold',
   },
@@ -605,14 +597,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    color: '#94a3b8',
     fontSize: 13,
   },
   listScrollContent: {
     paddingBottom: 24,
   },
   satelliteCard: {
-    backgroundColor: '#161936',
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,
@@ -620,26 +610,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
-  satelliteCardSelected: {
-    borderColor: '#00d4ff',
-    backgroundColor: '#1d224a',
-  },
+  satelliteCardSelected: {},
   cardInfo: {
     flex: 1,
     paddingRight: 10,
   },
   cardName: {
-    color: '#ffffff',
     fontSize: 14,
     fontWeight: 'bold',
   },
-  cardNameSelected: {
-    color: '#00d4ff',
-  },
+  cardNameSelected: {},
   cardSub: {
-    color: '#94a3b8',
     fontSize: 11,
     marginTop: 2,
   },
@@ -647,12 +629,10 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   coordText: {
-    color: '#00d4ff',
     fontSize: 12,
     fontWeight: '600',
   },
   altText: {
-    color: '#94a3b8',
     fontSize: 10,
     marginTop: 2,
   },

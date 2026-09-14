@@ -14,10 +14,12 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { calculateLaunchCountdown } from '../services/launchService';
 import { RootStackParamList } from '../types';
+import { useTheme } from '../context/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'LaunchDetails'>;
 
 export default function LaunchDetailsScreen({ route }: Props) {
+  const { colors, activeTheme } = useTheme();
   const { launch } = route.params;
   const [nowMs, setNowMs] = useState<number>(Date.now());
   const [imageError, setImageError] = useState<boolean>(false);
@@ -99,10 +101,10 @@ export default function LaunchDetailsScreen({ route }: Props) {
         resizeMode="cover"
       >
         {isPreparing ? (
-          <View style={styles.loadingContainer}>
-            <Text style={styles.loadingBrand}>OrbitPulse</Text>
-            <ActivityIndicator size="large" color="#00d4ff" style={styles.loader} />
-            <Text style={styles.loadingText}>Loading launch details...</Text>
+          <View style={[styles.loadingContainer, { backgroundColor: colors.overlay }]}>
+            <Text style={[styles.loadingBrand, { color: colors.textPrimary }]}>OrbitPulse</Text>
+            <ActivityIndicator size="large" color={colors.primaryAccent} style={styles.loader} />
+            <Text style={[styles.loadingText, { color: colors.primaryAccent }]}>Loading launch details...</Text>
           </View>
         ) : (
           <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -119,10 +121,10 @@ export default function LaunchDetailsScreen({ route }: Props) {
             ) : null}
 
             {/* Launch Name & Provider Header */}
-            <View style={styles.headerCard}>
+            <View style={[styles.headerCard, { backgroundColor: colors.surface, borderBottomColor: colors.surfaceBorder }]}>
               <View style={styles.badgeRow}>
-                <View style={styles.providerBadge}>
-                  <Text style={styles.providerText}>{launch.providerName}</Text>
+                <View style={[styles.providerBadge, { backgroundColor: colors.primaryAccent }]}>
+                  <Text style={[styles.providerText, { color: colors.background }]}>{launch.providerName}</Text>
                 </View>
                 <View
                   style={[
@@ -141,16 +143,16 @@ export default function LaunchDetailsScreen({ route }: Props) {
                 </View>
               </View>
 
-              <Text style={styles.launchTitle}>{launch.name}</Text>
+              <Text style={[styles.launchTitle, { color: colors.textPrimary }]}>{launch.name}</Text>
             </View>
 
             {/* Dynamic Countdown Banner */}
-            <View style={styles.countdownBanner}>
-              <Text style={styles.countdownTitle}>COUNTDOWN TO LAUNCH</Text>
+            <View style={[styles.countdownBanner, { backgroundColor: colors.surface, borderColor: colors.primaryAccent }]}>
+              <Text style={[styles.countdownTitle, { color: colors.textMuted }]}>COUNTDOWN TO LAUNCH</Text>
               <Text
                 style={[
                   styles.countdownText,
-                  countdown.isPastOrLive && styles.countdownTextLive,
+                  { color: countdown.isPastOrLive ? '#22c55e' : colors.primaryAccent },
                 ]}
               >
                 {countdown.countdownText}
@@ -164,53 +166,53 @@ export default function LaunchDetailsScreen({ route }: Props) {
                 onPress={handleOpenWebcast}
                 activeOpacity={0.8}
               >
-                <Text style={styles.webcastButtonText}>📺 Watch Live Webcast</Text>
+                <Text style={styles.webcastButtonText}>Watch Live Webcast</Text>
               </TouchableOpacity>
             )}
 
             {/* Details Metadata Grid */}
-            <View style={styles.sectionCard}>
-              <Text style={styles.sectionTitle}>Launch Specifications</Text>
+            <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+              <Text style={[styles.sectionTitle, { color: colors.primaryAccent }]}>Launch Specifications</Text>
 
               <View style={styles.gridRow}>
                 <View style={styles.gridItem}>
-                  <Text style={styles.gridLabel}>Rocket Vehicle</Text>
-                  <Text style={styles.gridValue}>{launch.rocketName}</Text>
+                  <Text style={[styles.gridLabel, { color: colors.textMuted }]}>Rocket Vehicle</Text>
+                  <Text style={[styles.gridValue, { color: colors.textPrimary }]}>{launch.rocketName}</Text>
                 </View>
 
                 <View style={styles.gridItem}>
-                  <Text style={styles.gridLabel}>Mission Type</Text>
-                  <Text style={styles.gridValue}>{launch.missionType}</Text>
+                  <Text style={[styles.gridLabel, { color: colors.textMuted }]}>Mission Type</Text>
+                  <Text style={[styles.gridValue, { color: colors.textPrimary }]}>{launch.missionType}</Text>
                 </View>
               </View>
 
               <View style={styles.gridRow}>
                 <View style={styles.gridItem}>
-                  <Text style={styles.gridLabel}>Launch Pad</Text>
-                  <Text style={styles.gridValue}>{launch.padName}</Text>
+                  <Text style={[styles.gridLabel, { color: colors.textMuted }]}>Launch Pad</Text>
+                  <Text style={[styles.gridValue, { color: colors.textPrimary }]}>{launch.padName}</Text>
                 </View>
 
                 <View style={styles.gridItem}>
-                  <Text style={styles.gridLabel}>Location</Text>
-                  <Text style={styles.gridValue}>{launch.locationName}</Text>
+                  <Text style={[styles.gridLabel, { color: colors.textMuted }]}>Location</Text>
+                  <Text style={[styles.gridValue, { color: colors.textPrimary }]}>{launch.locationName}</Text>
                 </View>
               </View>
 
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: colors.surfaceBorder }]} />
 
               <View style={styles.timeBlock}>
-                <Text style={styles.gridLabel}>Local Time</Text>
-                <Text style={styles.timeValue}>{localDate}</Text>
+                <Text style={[styles.gridLabel, { color: colors.textMuted }]}>Local Time</Text>
+                <Text style={[styles.timeValue, { color: colors.textPrimary }]}>{localDate}</Text>
 
-                <Text style={[styles.gridLabel, { marginTop: 8 }]}>UTC Time</Text>
-                <Text style={styles.timeValue}>{utcDate}</Text>
+                <Text style={[styles.gridLabel, { marginTop: 8, color: colors.textMuted }]}>UTC Time</Text>
+                <Text style={[styles.timeValue, { color: colors.textPrimary }]}>{utcDate}</Text>
               </View>
             </View>
 
             {/* Mission Overview / Description */}
-            <View style={styles.sectionCard}>
-              <Text style={styles.sectionTitle}>Mission Overview</Text>
-              <Text style={styles.missionText}>{launch.missionDescription}</Text>
+            <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
+              <Text style={[styles.sectionTitle, { color: colors.primaryAccent }]}>Mission Overview</Text>
+              <Text style={[styles.missionText, { color: colors.textSecondary }]}>{launch.missionDescription}</Text>
             </View>
           </ScrollView>
         )}
@@ -249,7 +251,7 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   loadingText: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 14,
     fontWeight: '600',
     letterSpacing: 0.5,
@@ -279,7 +281,7 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: 'rgba(22, 25, 54, 0.9)',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 212, 255, 0.2)',
+    borderBottomColor: 'rgba(91, 156, 255, 0.2)',
   },
   badgeRow: {
     flexDirection: 'row',
@@ -288,7 +290,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   providerBadge: {
-    backgroundColor: '#00d4ff',
+    backgroundColor: '#5B9CFF',
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 14,
@@ -328,12 +330,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#00d4ff',
-    shadowColor: '#00d4ff',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    borderColor: '#5B9CFF',
   },
   countdownTitle: {
     color: '#94a3b8',
@@ -343,7 +340,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   countdownText: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 24,
     fontWeight: 'bold',
     fontVariant: ['tabular-nums'],
@@ -358,11 +355,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 14,
     alignItems: 'center',
-    shadowColor: '#e53e3e',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    elevation: 4,
   },
   webcastButtonText: {
     color: '#ffffff',
@@ -379,7 +371,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   sectionTitle: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 15,
     fontWeight: 'bold',
     marginBottom: 12,

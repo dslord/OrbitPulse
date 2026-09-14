@@ -14,10 +14,12 @@ import * as Location from 'expo-location';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { calculateISSPasses, calculatePassCountdown } from '../services/issPassService';
 import { ISSPassItem, RootStackParamList } from '../types';
+import { useTheme } from '../context/ThemeContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ISSPass'>;
 
 export default function ISSPassScreen({ navigation }: Props) {
+  const { colors, activeTheme } = useTheme();
   const [location, setLocation] = useState<{ lat: number; lon: number; altKm: number } | null>(null);
   const [locationPermission, setLocationPermission] = useState<boolean | null>(null);
   const [passes, setPasses] = useState<ISSPassItem[]>([]);
@@ -94,9 +96,9 @@ export default function ISSPassScreen({ navigation }: Props) {
     const isVisible = item.visibility === 'Visible';
 
     return (
-      <View style={styles.passListCard}>
+      <View style={[styles.passListCard, { backgroundColor: colors.surface, borderColor: colors.surfaceBorder }]}>
         <View style={styles.passListHeader}>
-          <Text style={styles.passListDate}>{startDateFormatted}</Text>
+          <Text style={[styles.passListDate, { color: colors.textPrimary }]}>{startDateFormatted}</Text>
           <View
             style={[
               styles.visibilityBadgeSmall,
@@ -111,8 +113,8 @@ export default function ISSPassScreen({ navigation }: Props) {
 
         <View style={styles.passListRow}>
           <View style={styles.passListItem}>
-            <Text style={styles.passListLabel}>Peak Time</Text>
-            <Text style={styles.passListValue}>
+            <Text style={[styles.passListLabel, { color: colors.textMuted }]}>Peak Time</Text>
+            <Text style={[styles.passListValue, { color: colors.textSecondary }]}>
               {new Date(item.peakTime).toLocaleTimeString(undefined, {
                 hour: '2-digit',
                 minute: '2-digit',
@@ -122,13 +124,13 @@ export default function ISSPassScreen({ navigation }: Props) {
           </View>
 
           <View style={styles.passListItem}>
-            <Text style={styles.passListLabel}>Max Elevation</Text>
-            <Text style={styles.passListValue}>{item.maxElevation}°</Text>
+            <Text style={[styles.passListLabel, { color: colors.textMuted }]}>Max Elevation</Text>
+            <Text style={[styles.passListValue, { color: colors.textSecondary }]}>{item.maxElevation}°</Text>
           </View>
 
           <View style={styles.passListItemRight}>
-            <Text style={styles.passListLabel}>Direction</Text>
-            <Text style={styles.passListValue}>{item.directionSummary}</Text>
+            <Text style={[styles.passListLabel, { color: colors.textMuted }]}>Direction</Text>
+            <Text style={[styles.passListValue, { color: colors.textSecondary }]}>{item.directionSummary}</Text>
           </View>
         </View>
       </View>
@@ -144,32 +146,32 @@ export default function ISSPassScreen({ navigation }: Props) {
       >
         {/* Permission Denied View */}
         {locationPermission === false && !loading && (
-          <View style={styles.centerContainer}>
-            <Text style={styles.errorTitle}>Location Access Required</Text>
-            <Text style={styles.errorText}>
+          <View style={[styles.centerContainer, { backgroundColor: colors.overlay }]}>
+            <Text style={[styles.errorTitle, { color: colors.critical }]}>Location Access Required</Text>
+            <Text style={[styles.errorText, { color: colors.textSecondary }]}>
               ISS Next-Pass predictions require your device location to calculate when the Space Station will rise above your horizon.
             </Text>
-            <TouchableOpacity style={styles.actionButton} onPress={fetchPassData}>
-              <Text style={styles.actionButtonText}>Grant Location Permission</Text>
+            <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.primaryAccent }]} onPress={fetchPassData}>
+              <Text style={[styles.actionButtonText, { color: colors.background }]}>Grant Location Permission</Text>
             </TouchableOpacity>
           </View>
         )}
 
         {/* Loading View */}
         {loading && (
-          <View style={styles.centerContainer}>
-            <ActivityIndicator size="large" color="#00d4ff" />
-            <Text style={styles.loadingText}>Acquiring Location & Propagating Orbit...</Text>
+          <View style={[styles.centerContainer, { backgroundColor: colors.overlay }]}>
+            <ActivityIndicator size="large" color={colors.primaryAccent} />
+            <Text style={[styles.loadingText, { color: colors.primaryAccent }]}>Acquiring Location & Propagating Orbit...</Text>
           </View>
         )}
 
         {/* Error View */}
         {error && !loading && locationPermission !== false && (
-          <View style={styles.centerContainer}>
-            <Text style={styles.errorTitle}>Calculation Error</Text>
-            <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity style={styles.actionButton} onPress={onRefresh}>
-              <Text style={styles.actionButtonText}>Retry Calculation</Text>
+          <View style={[styles.centerContainer, { backgroundColor: colors.overlay }]}>
+            <Text style={[styles.errorTitle, { color: colors.critical }]}>Calculation Error</Text>
+            <Text style={[styles.errorText, { color: colors.textSecondary }]}>{error}</Text>
+            <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.primaryAccent }]} onPress={onRefresh}>
+              <Text style={[styles.actionButtonText, { color: colors.background }]}>Retry Calculation</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -182,16 +184,16 @@ export default function ISSPassScreen({ navigation }: Props) {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                tintColor="#00d4ff"
-                colors={['#00d4ff']}
+                tintColor={colors.primaryAccent}
+                colors={[colors.primaryAccent]}
               />
             }
           >
             {/* Observer Location Badge */}
             {location && (
-              <View style={styles.locationBanner}>
-                <Text style={styles.locationLabel}>OBSERVER LOCATION</Text>
-                <Text style={styles.locationCoords}>
+              <View style={[styles.locationBanner, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
+                <Text style={[styles.locationLabel, { color: colors.textMuted }]}>OBSERVER LOCATION</Text>
+                <Text style={[styles.locationCoords, { color: colors.primaryAccent }]}>
                   {location.lat.toFixed(2)}° N, {location.lon.toFixed(2)}° E
                 </Text>
               </View>
@@ -199,9 +201,9 @@ export default function ISSPassScreen({ navigation }: Props) {
 
             {/* HERO NEXT PASS CARD */}
             {heroPass ? (
-              <View style={styles.heroCard}>
+              <View style={[styles.heroCard, { backgroundColor: colors.surface, borderColor: colors.primaryAccent }]}>
                 <View style={styles.heroHeader}>
-                  <Text style={styles.heroTitle}>NEXT ISS PASS</Text>
+                  <Text style={[styles.heroTitle, { color: colors.textPrimary }]}>NEXT ISS PASS</Text>
                   <View
                     style={[
                       styles.visibilityBadge,
@@ -220,12 +222,12 @@ export default function ISSPassScreen({ navigation }: Props) {
                 </View>
 
                 {/* Dynamic Countdown Banner */}
-                <View style={styles.countdownBanner}>
-                  <Text style={styles.countdownLabel}>COUNTDOWN</Text>
+                <View style={[styles.countdownBanner, { backgroundColor: colors.raisedSurface, borderColor: colors.surfaceBorder }]}>
+                  <Text style={[styles.countdownLabel, { color: colors.textMuted }]}>COUNTDOWN</Text>
                   <Text
                     style={[
                       styles.countdownValue,
-                      calculatePassCountdown(heroPass.startTime, nowMs).isLive && styles.countdownValueLive,
+                      { color: calculatePassCountdown(heroPass.startTime, nowMs).isLive ? '#22c55e' : colors.primaryAccent },
                     ]}
                   >
                     {calculatePassCountdown(heroPass.startTime, nowMs).countdownText}
@@ -235,8 +237,8 @@ export default function ISSPassScreen({ navigation }: Props) {
                 {/* Times Grid */}
                 <View style={styles.specGrid}>
                   <View style={styles.specItem}>
-                    <Text style={styles.specLabel}>Starts</Text>
-                    <Text style={styles.specValue}>
+                    <Text style={[styles.specLabel, { color: colors.textMuted }]}>Starts</Text>
+                    <Text style={[styles.specValue, { color: colors.textPrimary }]}>
                       {new Date(heroPass.startTime).toLocaleTimeString(undefined, {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -246,8 +248,8 @@ export default function ISSPassScreen({ navigation }: Props) {
                   </View>
 
                   <View style={styles.specItemCenter}>
-                    <Text style={styles.specLabel}>Peaks</Text>
-                    <Text style={styles.specValueHighlight}>
+                    <Text style={[styles.specLabel, { color: colors.textMuted }]}>Peaks</Text>
+                    <Text style={[styles.specValueHighlight, { color: colors.primaryAccent }]}>
                       {new Date(heroPass.peakTime).toLocaleTimeString(undefined, {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -257,8 +259,8 @@ export default function ISSPassScreen({ navigation }: Props) {
                   </View>
 
                   <View style={styles.specItemRight}>
-                    <Text style={styles.specLabel}>Ends</Text>
-                    <Text style={styles.specValue}>
+                    <Text style={[styles.specLabel, { color: colors.textMuted }]}>Ends</Text>
+                    <Text style={[styles.specValue, { color: colors.textPrimary }]}>
                       {new Date(heroPass.endTime).toLocaleTimeString(undefined, {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -268,27 +270,27 @@ export default function ISSPassScreen({ navigation }: Props) {
                   </View>
                 </View>
 
-                <View style={styles.divider} />
+                <View style={[styles.divider, { backgroundColor: colors.surfaceBorder }]} />
 
                 {/* Elevation & Trajectory Row */}
                 <View style={styles.specGrid}>
                   <View style={styles.specItem}>
-                    <Text style={styles.specLabel}>Max Elevation</Text>
-                    <Text style={styles.specValue}>{heroPass.maxElevation}°</Text>
+                    <Text style={[styles.specLabel, { color: colors.textMuted }]}>Max Elevation</Text>
+                    <Text style={[styles.specValue, { color: colors.textPrimary }]}>{heroPass.maxElevation}°</Text>
                   </View>
 
                   <View style={styles.specItemRight}>
-                    <Text style={styles.specLabel}>Trajectory</Text>
-                    <Text style={styles.specValue}>{heroPass.directionSummary}</Text>
+                    <Text style={[styles.specLabel, { color: colors.textMuted }]}>Trajectory</Text>
+                    <Text style={[styles.specValue, { color: colors.textPrimary }]}>{heroPass.directionSummary}</Text>
                   </View>
                 </View>
 
-                <Text style={styles.visibilityNote}>{heroPass.visibilityDetails}</Text>
+                <Text style={[styles.visibilityNote, { color: colors.textMuted }]}>{heroPass.visibilityDetails}</Text>
               </View>
             ) : (
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyTitle}>No Passes Detected</Text>
-                <Text style={styles.emptySub}>
+                <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No Passes Detected</Text>
+                <Text style={[styles.emptySub, { color: colors.textMuted }]}>
                   No visible ISS passes predicted over your location for the next 3 days.
                 </Text>
               </View>
@@ -297,7 +299,7 @@ export default function ISSPassScreen({ navigation }: Props) {
             {/* SUBSEQUENT PASSES LIST */}
             {subsequentPasses.length > 0 && (
               <View style={styles.sectionContainer}>
-                <Text style={styles.sectionTitle}>UPCOMING PASSES (3 DAYS)</Text>
+                <Text style={[styles.sectionTitle, { color: colors.primaryAccent }]}>UPCOMING PASSES (3 DAYS)</Text>
                 {subsequentPasses.map((item, idx) => (
                   <React.Fragment key={item.id}>
                     {renderPassCard({ item, index: idx })}
@@ -329,7 +331,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   loadingText: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 15,
     fontWeight: 'bold',
     marginTop: 14,
@@ -348,7 +350,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   actionButton: {
-    backgroundColor: '#00d4ff',
+    backgroundColor: '#5B9CFF',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 20,
@@ -371,7 +373,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.2)',
+    borderColor: 'rgba(91, 156, 255, 0.2)',
   },
   locationLabel: {
     color: '#64748b',
@@ -380,7 +382,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   locationCoords: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 13,
     fontWeight: 'bold',
   },
@@ -390,12 +392,7 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#00d4ff',
-    shadowColor: '#00d4ff',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    borderColor: '#5B9CFF',
   },
   heroHeader: {
     flexDirection: 'row',
@@ -452,7 +449,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(0, 212, 255, 0.25)',
+    borderColor: 'rgba(91, 156, 255, 0.25)',
   },
   countdownLabel: {
     color: '#94a3b8',
@@ -461,7 +458,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   countdownValue: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 18,
     fontWeight: 'bold',
     fontVariant: ['tabular-nums'],
@@ -498,7 +495,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   specValueHighlight: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 14,
     fontWeight: 'bold',
     marginTop: 2,
@@ -518,7 +515,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   sectionTitle: {
-    color: '#00d4ff',
+    color: '#5B9CFF',
     fontSize: 13,
     fontWeight: 'bold',
     letterSpacing: 1,
