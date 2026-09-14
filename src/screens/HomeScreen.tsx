@@ -84,7 +84,7 @@ export default function HomeScreen({ navigation }: Props) {
             </View>
             <Text style={styles.numberBadge}>3</Text>
             <Image
-              source={require('../../assets/blog_icon.png')}
+              source={require('../../assets/today_in_space.png')}
               style={styles.cardIconRocket}
             />
           </TouchableOpacity>
@@ -102,7 +102,7 @@ export default function HomeScreen({ navigation }: Props) {
             </View>
             <Text style={styles.numberBadge}>4</Text>
             <Image
-              source={require('../../assets/iss_icon.png')}
+              source={require('../../assets/iss_location.png')}
               style={styles.cardIconIss}
             />
           </TouchableOpacity>
@@ -192,7 +192,7 @@ export default function HomeScreen({ navigation }: Props) {
             </View>
             <Text style={styles.numberBadge}>9</Text>
             <Image
-              source={require('../../assets/meteor_icon.png')}
+              source={require('../../assets/meteor_feed.png')}
               style={styles.cardIconMeteor}
             />
           </TouchableOpacity>
@@ -210,7 +210,7 @@ export default function HomeScreen({ navigation }: Props) {
             </View>
             <Text style={styles.numberBadge}>10</Text>
             <Image
-              source={require('../../assets/rocket_icon.png')}
+              source={require('../../assets/space_updates.png')}
               style={styles.cardIconRocket}
             />
           </TouchableOpacity>
