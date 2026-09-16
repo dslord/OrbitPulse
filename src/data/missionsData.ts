@@ -218,7 +218,7 @@ export const MISSIONS_DATA: MissionItem[] = [
       'Analyze surface soil composition, ice distribution, and atmosphere',
       'Measure Martian magnetic field and ionosphere plasma parameters',
     ],
-    websiteUrl: 'http://www.cnsa.gov.cn',
+    websiteUrl: 'https://www.cnsa.gov.cn',
   },
   {
     id: 'change-6',
@@ -238,6 +238,6 @@ export const MISSIONS_DATA: MissionItem[] = [
       'Ascend from lunar far side and execute automated lunar orbit docking',
       'Safely deliver lunar far-side samples to Earth for scientific research',
     ],
-    websiteUrl: 'http://www.cnsa.gov.cn',
+    websiteUrl: 'https://www.cnsa.gov.cn',
   },
 ];
