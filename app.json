@@ -19,7 +19,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0b0d1b"
       },
-      "package": "com.anonymous.orbitpulse"
+      "package": "com.dslord.orbitpulse"
     },
     "web": {
       "favicon": "./assets/favicon.png"
