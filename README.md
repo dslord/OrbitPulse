@@ -1,6 +1,6 @@
-# OrbitPulse 🚀
+# OrbitPulse
 
-**OrbitPulse** is a modern, real-time space operations and satellite tracking application built with React Native and Expo SDK 57. It provides live telemetry, orbital path visualization, near-Earth object tracking, launch schedules, spaceflight news, and detailed space agency mission overviews across iOS and Android.
+OrbitPulse is a modern, real-time space operations and satellite tracking application built with React Native and Expo SDK 57. It provides live telemetry, orbital path visualization, near-Earth object tracking, launch schedules, spaceflight news, and detailed space agency mission overviews across iOS and Android.
 
 ---
 
@@ -40,8 +40,8 @@
 - **Language**: [TypeScript](https://www.typescriptlang.org/) (`~6.0.3`)
 - **Navigation**: [React Navigation v7](https://reactnavigation.org/) (`@react-navigation/native` & `@react-navigation/native-stack`)
 - **Mapping & Geospatial**: [MapLibre GL React Native](https://github.com/maplibre/maplibre-react-native) (`^10.0.0`)
-- **Local Storage**: [@react-native-async-storage/async-storage](https://react-native-async-storage.github.io/async-storage/)
-- **Safe Area Management**: `react-native-safe-area-context` & `react-native-screens`
+- **Local Storage**: [@react-native-async-storage/async-storage](https://react-native-async-storage.github.io/async-storage/) (`^2.2.0`)
+- **Safe Area & UI Components**: `react-native-safe-area-context` & `react-native-screens`
 
 ---
 
@@ -206,3 +206,7 @@ OrbitPulse relies on telemetry and data provided by the international space comm
 ## License
 
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for complete details.
+
+---
+
+Developed by [dslord](https://github.com/dslord)
