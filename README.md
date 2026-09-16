@@ -36,20 +36,19 @@ OrbitPulse is a modern, real-time space operations and satellite tracking applic
 
 ## Screenshots
 
-### Home
-![OrbitPulse Home](assets/screenshots/home.jpg)
+<p align="center">
+  <img src="assets/screenshots/home.jpg" width="45%" alt="OrbitPulse Home" />
+  <img src="assets/screenshots/iss-locator.jpg" width="45%" alt="ISS Locator" />
+</p>
 
-### ISS Locator
-![ISS Locator](assets/screenshots/iss-locator.jpg)
+<p align="center">
+  <img src="assets/screenshots/satellite-explorer.jpg" width="45%" alt="Satellite Explorer" />
+  <img src="assets/screenshots/launch-tracker.jpg" width="45%" alt="Launch Tracker" />
+</p>
 
-### Satellite Explorer
-![Satellite Explorer](assets/screenshots/satellite-explorer.jpg)
-
-### Launch Tracker
-![Launch Tracker](assets/screenshots/launch-tracker.jpg)
-
-### Mission Explorer
-![Mission Explorer](assets/screenshots/mission-explorer.jpg)
+<p align="center">
+  <img src="assets/screenshots/mission-explorer.jpg" width="45%" alt="Mission Explorer" />
+</p>
 
 ---
 
